@@ -1,7 +1,7 @@
 # Crowd-Sourced Travel Planner
 
 ## Citation
-The bash commands for getting the projected started from the initial GitHub repo and files to ignore when committing to GitHub were generated with the help of Claude VSCode extension.  This transcript [[insert link here](https://docs.google.com/document/d/1kcTE1qxboMk_0MH4SVl7NGlqB1efHRfydPvJrMjyQSM/edit?tab=t.0)] documents the GenAI interaction that led to the primary README.md and .gitignore files"
+The bash commands for getting the projected started from the initial GitHub repo and files to ignore when committing to GitHub were generated with the help of Claude VSCode extension.  This transcript [[link here](https://docs.google.com/document/d/1kcTE1qxboMk_0MH4SVl7NGlqB1efHRfydPvJrMjyQSM/edit?tab=t.0)] documents the GenAI interaction that led to the primary README.md and .gitignore files"
 
 ## Prerequisites
 
