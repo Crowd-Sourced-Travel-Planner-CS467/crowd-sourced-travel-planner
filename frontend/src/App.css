@@ -4,6 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  flex-direction: column;
 }
 
 .landing-title {
@@ -12,4 +13,12 @@
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.02em;
+  margin-bottom: 40px;
 }
+
+.trip-link {
+  margin-top: auto
+}
+
+
+
