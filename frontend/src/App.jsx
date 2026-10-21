@@ -9,6 +9,7 @@ function App() {
     {/* <a className="trip-management-link" href="/trip-management">Trip Management</a> */}
 
     <Link className="trip-management-link" to="/trip-management">Trip Management</Link>
+    <Link to={"/experiences/new"}>Create an Experience</Link>
 
     </main>
   )
