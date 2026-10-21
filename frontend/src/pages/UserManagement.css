@@ -1,0 +1,215 @@
+/*
+Citation:
+The css code for the Create an Experience page was generated with the help of ChatGPT.
+This transcript link https://chatgpt.com/share/6ad8cd47-0750-83ee-b78a-646ea5bfc6ea
+documents the GenAI interaction that led to ExperienceForm.css"
+*/
+
+/* Main page */
+.um-page {
+    min-height: 100vh;
+    padding: 40px 20px;
+    box-sizing: border-box;
+    font-family: inherit;
+    color: inherit;
+}
+
+/* Form cards */
+.um-card {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 32px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.um-card h1 {
+    margin: 0 0 16px;
+    font-size: 28px;
+    text-align: center;
+}
+
+.um-card > p {
+    margin: 0 0 28px;
+    line-height: 1.6;
+    text-align: center;
+    color: #666;
+}
+
+.um-card h2 {
+    margin: 24px 0 20px;
+    font-size: 20px;
+}
+
+/* Labels and form controls */
+.um-card label:not(.um-checkbox) {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.um-card input:not([type="checkbox"]),
+.um-card textarea {
+    display: block;
+    width: 100%;
+    margin-bottom: 22px;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: canvas;
+    color: inherit;
+    font: inherit;
+}
+
+.um-card textarea {
+    resize: vertical;
+}
+
+.um-card input:focus-visible,
+.um-card textarea:focus-visible {
+    outline: 2px solid #888;
+    outline-offset: 2px;
+}
+
+.um-card input::placeholder,
+.um-card textarea::placeholder {
+    color: #888;
+}
+
+/* Registration help text */
+.um-card small {
+    display: block;
+    margin-top: -14px;
+    margin-bottom: 22px;
+    color: #666;
+    font-size: 13px;
+}
+
+/* Buttons */
+.um-card button {
+    padding: 11px 18px;
+    border: none;
+    border-radius: 6px;
+    background-color: #888;
+    color: white;
+    font-family: inherit;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.um-card button:hover:not(:disabled) {
+    background-color: #707070;
+}
+
+.um-card button:focus-visible,
+.um-card a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+}
+
+.um-card button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Main form buttons */
+.um-card > button,
+.um-card > form > button {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+}
+
+/* Links */
+.um-card a {
+    display: block;
+    width: fit-content;
+    margin: 18px auto 0;
+    color: inherit;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.um-card a:hover {
+    opacity: 0.7;
+}
+
+/* Account management sections */
+.um-card hr {
+    margin: 30px 0;
+    border: 0;
+    border-top: 1px solid #ddd;
+}
+
+.um-danger-zone {
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid #e3b5b5;
+    border-radius: 8px;
+}
+
+.um-danger-zone h2 {
+    margin-top: 0;
+}
+
+.um-danger-zone p {
+    margin: 0 0 18px;
+    line-height: 1.6;
+    color: #666;
+}
+
+/* Delete confirmation checkbox */
+.um-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.um-checkbox input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin: 2px 0 0;
+    accent-color: #888;
+    cursor: pointer;
+}
+
+/* Delete account button */
+.um-card .um-danger-button {
+    width: 100%;
+    background-color: #b84040;
+}
+
+.um-card .um-danger-button:hover:not(:disabled) {
+    background-color: #963333;
+}
+
+/* Responsive layout */
+@media (max-width: 600px) {
+    .um-page {
+        padding: 20px 12px;
+    }
+
+    .um-card {
+        padding: 22px 18px;
+    }
+
+    .um-card h1 {
+        font-size: 24px;
+    }
+
+    .um-danger-zone {
+        padding: 16px;
+    }
+}

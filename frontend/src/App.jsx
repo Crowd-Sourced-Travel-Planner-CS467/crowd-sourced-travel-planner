@@ -8,9 +8,13 @@ function App() {
 
     {/* <a className="trip-management-link" href="/trip-management">Trip Management</a> */}
 
-    <Link className="trip-management-link" to="/trip-management">Trip Management</Link>
+    
+    <Link to={"/register"}>Register Account</Link>
+    <Link to={"/login"}>Login</Link>
     <Link to={"/experiences/new"}>Create an Experience</Link>
-
+    <Link className="trip-management-link" to="/trip-management">Trip Management</Link>
+    <Link to={"/profile"}>View Profile</Link>
+    <Link to={"/account"}>Manage Account</Link>
     </main>
   )
 }
