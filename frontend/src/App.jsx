@@ -12,6 +12,7 @@ function App() {
     <Link to={"/register"}>Register Account</Link>
     <Link to={"/login"}>Login</Link>
     <Link to={"/experiences/new"}>Create an Experience</Link>
+    <Link to="/experiences">Discover Experiences</Link>
     <Link className="trip-management-link" to="/trip-management">Trip Management</Link>
     <Link to={"/profile"}>View Profile</Link>
     <Link to={"/account"}>Manage Account</Link>
