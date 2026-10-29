@@ -1,29 +1,64 @@
-
+/* Main container for the trip management page */
 .trips-container {
   max-width: 500px;
   margin: 30px auto;
   padding: 20px;
 }
 
+/* Arranges the form elements in a horizontal row */
 .trips-container form {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  padding: 20px
+  padding: 20px;
 }
 
+/* Styles the input fields */
 .trips-container input {
   padding: 10px;
   font-size: 16px;
 }
 
+/* Styles the buttons */
 .trips-container button {
   padding: 10px 16px;
   cursor: pointer;
 }
 
+/* Styles the main heading */
 .trips-container h2 {
   font-size: 32px;
   font-weight: bold;
+}
+
+/* Styles the saved trips table layout */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  text-align: left;
+}
+
+/* Adds spacing and aligns text in table headers and cells */
+th,
+td {
+  padding: 12px 24px;
+  text-align: left;
+}
+
+/* Styles column headings and adds a line below them */
+th {
+  font-weight: bold;
+  border-bottom: 2px solid #ccc;
+}
+
+/* Adds horizontal lines between saved trips */
+td {
+  border-bottom: 1px solid #ddd;
+}
+
+/* Removes the bottom line from the last trip */
+tbody tr:last-child td {
+  border-bottom: none;
 }
