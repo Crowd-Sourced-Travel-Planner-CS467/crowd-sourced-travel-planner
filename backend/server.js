@@ -92,7 +92,65 @@ app.get("/api/trips", async (req, res) => {
   }
 });
 
+// Delete a trip
+app.delete("/api/trips/:trip_id", async (req, res) => {
+  const { trip_id } = req.params;
+  const { user_id } = req.body;
 
+  try {
+    const result = await pool.query(
+      `DELETE FROM public.trips
+       WHERE trip_id = $1 AND user_id = $2
+       RETURNING trip_id`,
+      [trip_id, user_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        error: "Trip not found or you do not have permission to delete it."
+      });
+    }
+
+    res.json({ message: "Trip deleted successfully." });
+  } catch (err) {
+    console.error("Error deleting trip:", err);
+    res.status(500).json({ error: "Failed to delete trip." });
+  }
+});
+
+// Update an existing trip name
+app.put("/api/trips/:trip_id", async (req, res) => {
+  const { trip_id } = req.params;
+  const { user_id, trip_name } = req.body;
+
+  // Validate the trip name
+  if (!trip_name || !trip_name.trim()) {
+    return res.status(400).json({
+      error: "A valid trip name is required."
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE public.trips
+       SET trip_name = $1
+       WHERE trip_id = $2 AND user_id = $3
+       RETURNING trip_id, user_id, trip_name, created_time`,
+      [trip_name.trim(), trip_id, user_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        error: "Trip not found or you do not have permission to update it."
+      });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error updating trip:", err);
+    res.status(500).json({ error: "Failed to update trip." });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

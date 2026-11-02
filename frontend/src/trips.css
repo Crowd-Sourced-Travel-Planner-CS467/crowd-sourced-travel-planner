@@ -1,6 +1,6 @@
 /* Main container for the trip management page */
 .trips-container {
-  max-width: 500px;
+  max-width: 2000px;
   margin: 30px auto;
   padding: 20px;
 }
@@ -62,3 +62,12 @@ td {
 tbody tr:last-child td {
   border-bottom: none;
 }
+
+/* Spaces the action buttons side by side */
+td:last-child {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+
