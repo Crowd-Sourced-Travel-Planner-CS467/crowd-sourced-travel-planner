@@ -57,6 +57,12 @@ documents the GenAI interaction that led to ExperienceForm.css"
     font-size: 13px;
 }
 
+.error-text {
+    margin: 0;
+    color: #d93025;
+    font-size: 14px;
+}
+
 .star-rating {
     display: flex;
     align-items: center;
@@ -134,9 +140,14 @@ documents the GenAI interaction that led to ExperienceForm.css"
     cursor: pointer;
 }
 
-.create-button:hover,
+.create-button:hover:not(:disabled),
 .cancel-button:hover {
     background-color: #707070;
+}
+
+.create-button:disabled {
+    background-color: #bbb;
+    cursor: not-allowed;
 }
 
 .create-button:focus-visible,

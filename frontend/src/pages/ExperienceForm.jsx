@@ -8,6 +8,14 @@ documents the GenAI interaction that led to ExperienceForm.jsx
 import { useState } from "react";
 import "./ExperienceForm.css";
 
+// TODO: replace with the logged-in user's id once auth exists
+const TEMP_USER_ID = 1;
+
+// Must match the limits in backend/validation/experienceValidation.js
+const MAX_KEYWORDS = 10;
+const MAX_KEYWORD_LENGTH = 30;
+const MAX_DESCRIPTION_LENGTH = 2000;
+
 function ExperienceForm() {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -17,6 +25,8 @@ function ExperienceForm() {
     const [keywords, setKeywords] = useState([]);
     const [keywordInput, setKeywordInput] = useState("");
     const [showDialog, setShowDialog] = useState(false);
+    const [error, setError] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleAddKeyword = (event) => {
         if (event.key !== "Enter" && event.key !== ",") {
@@ -29,12 +39,14 @@ function ExperienceForm() {
 
         if (
             keyword &&
-            keywords.length < 10 &&
+            keyword.length <= MAX_KEYWORD_LENGTH &&
+            keywords.length < MAX_KEYWORDS &&
             !keywords.some(
                 (item) => item.toLowerCase() === keyword.toLowerCase()
             )
         ) {
             setKeywords([...keywords, keyword]);
+            setError("");
         }
 
         setKeywordInput("");
@@ -46,12 +58,53 @@ function ExperienceForm() {
         );
     };
 
-    const handleSubmit = (event) => {
+    // Saves the experience to the database, then shows the confirmation dialog or an error.
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        setShowDialog(true);
+        setError("");
+
+        if (rating === 0) {
+            setError("Please select a rating.");
+            return;
+        }
+
+        if (keywords.length === 0) {
+            setError("Please add at least one keyword. Press Enter or type a comma to add it.");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch("/api/experiences", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: TEMP_USER_ID,
+                    title,
+                    description,
+                    address,
+                    imageUrl,
+                    rating,
+                    keywords,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Could not create experience");
+            }
+
+            setShowDialog(true);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const handleCancel = () => {
+    const resetForm = () => {
         setTitle("");
         setDescription("");
         setAddress("");
@@ -59,6 +112,7 @@ function ExperienceForm() {
         setRating(0);
         setKeywords([]);
         setKeywordInput("");
+        setError("");
         setShowDialog(false);
     };
 
@@ -93,6 +147,7 @@ function ExperienceForm() {
                             }
                             placeholder="Describe your experience"
                             rows={5}
+                            maxLength={MAX_DESCRIPTION_LENGTH}
                             required
                         />
                     </div>
@@ -117,11 +172,12 @@ function ExperienceForm() {
                             value={imageUrl}
                             onChange={(event) => setImageUrl(event.target.value)}
                             placeholder="https://example.com/image.jpg"
+                            required
                         />
                     </div>
 
                     <div className="form-group">
-                        <label>Average Rating</label>
+                        <label>Rating</label>
 
                         <div
                             className="star-rating"
@@ -138,7 +194,10 @@ function ExperienceForm() {
                                     className={
                                         star <= rating ? "star selected" : "star"
                                     }
-                                    onClick={() => setRating(star)}
+                                    onClick={() => {
+                                        setRating(star);
+                                        setError("");
+                                    }}
                                 >
                                     ★
                                 </button>
@@ -152,7 +211,7 @@ function ExperienceForm() {
 
                     <div className="form-group">
                         <label htmlFor="experience-keywords">
-                            Keywords (max 10)
+                            Keywords (1–{MAX_KEYWORDS})
                         </label>
 
                         <input
@@ -164,16 +223,17 @@ function ExperienceForm() {
                             }
                             onKeyDown={handleAddKeyword}
                             placeholder={
-                                keywords.length >= 10
-                                    ? "Maximum of 10 keywords reached"
+                                keywords.length >= MAX_KEYWORDS
+                                    ? `Maximum of ${MAX_KEYWORDS} keywords reached`
                                     : "Type a keyword and press Enter"
                             }
-                            disabled={keywords.length >= 10}
+                            maxLength={MAX_KEYWORD_LENGTH}
+                            disabled={keywords.length >= MAX_KEYWORDS}
                         />
 
                         <p className="help-text">
                             Press Enter or type a comma to add a keyword.
-                            {" "}{keywords.length}/10 keywords added.
+                            {" "}{keywords.length}/{MAX_KEYWORDS} keywords added.
                         </p>
 
                         <div className="keyword-list">
@@ -192,15 +252,19 @@ function ExperienceForm() {
                         </div>
                     </div>
 
+                    {error && <p className="error-text">{error}</p>}
+
                     <div className="form-actions">
-                        <button type="submit" className="create-button">
-                            Create Experience
+                        {/* Disable the Create Experience button while request is processing
+                        Prevents users from clicking twice and creating duplicate experiences */}
+                        <button type="submit" className="create-button" disabled={isSubmitting}>
+                            {isSubmitting ? "Creating..." : "Create Experience"}
                         </button>
 
                         <button
                             type="button"
                             className="cancel-button"
-                            onClick={handleCancel}
+                            onClick={resetForm}
                         >
                             Cancel
                         </button>
@@ -229,15 +293,13 @@ function ExperienceForm() {
                                 <strong>Address:</strong> {address}
                             </p>
                             <p>
-                                <strong>Image URL:</strong> {imageUrl || "Not provided"}
+                                <strong>Image URL:</strong> {imageUrl}
                             </p>
                             <p>
-                                <strong>Average Rating:</strong>{" "}
-                                {rating > 0 ? `${rating}/5 stars` : "Not rated"}
+                                <strong>Rating:</strong> {rating}/5 stars
                             </p>
                             <p>
-                                <strong>Keywords:</strong>{" "}
-                                {keywords.length > 0 ? keywords.join(", ") : "None"}
+                                <strong>Keywords:</strong> {keywords.join(", ")}
                             </p>
                         </div>
 
@@ -245,7 +307,7 @@ function ExperienceForm() {
                             <button
                                 type="button"
                                 className="create-button"
-                                onClick={() => setShowDialog(false)}
+                                onClick={resetForm}
                             >
                                 Close
                             </button>
