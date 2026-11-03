@@ -197,7 +197,7 @@ function Trips() {
           placeholder="Enter a trip name"
         />
 
-        <button type="button" onClick={() => setSearchName('')}>
+        <button className="clear-button" type="button" onClick={() => setSearchName('')}>
           Clear Filter
         </button>
       </form>
@@ -244,19 +244,19 @@ function Trips() {
                   <td>
                     {editingTripId === trip.trip_id ? (
                       <>
-                        <button onClick={() => saveTripName(trip.trip_id)}>
+                        <button className="save-button" onClick={() => saveTripName(trip.trip_id)}>
                           Save
                         </button>
-                        <button onClick={cancelEdit}>
+                        <button className="cancel-button" onClick={cancelEdit}>
                           Cancel
                         </button>
                       </>
                     ) : (
                       <>
-                        <button onClick={() => handleEdit(trip)}>
+                        <button className="edit-button" onClick={() => handleEdit(trip)}>
                           Edit
                         </button>
-                        <button onClick={() => deleteTrip(trip.trip_id)}>
+                        <button className="delete-button" onClick={() => deleteTrip(trip.trip_id)}>
                           Delete
                         </button>
                       </>
