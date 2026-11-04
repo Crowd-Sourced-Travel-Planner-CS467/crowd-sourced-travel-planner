@@ -125,6 +125,7 @@ describe("validateExperience", () => {
       assert.ok(errors.includes("No more than 10 keywords are allowed."));
     });
 
+    // Duplicate keywords should not count toward the 10-keyword limit.
     test("counts keywords after removing duplicates", () => {
       const { errors } = validateExperience(
         validBody({ keywords: [...makeKeywords(10), "KEYWORD0"] })
