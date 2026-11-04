@@ -1,3 +1,5 @@
+// Code below created with AI assistance from chatGPT.
+// Transcript: https://oregonstateuniversity-my.sharepoint.com/:w:/g/personal/harrisr6_oregonstate_edu/IQBeWruOGYKtRJCqR3wQY04OAQb-4zGosjXMuJZV76Xwpms?e=cQa044 
 
 const express = require("express");
 require("dotenv").config();
