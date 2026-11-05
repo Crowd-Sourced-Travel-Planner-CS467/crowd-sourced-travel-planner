@@ -26,6 +26,7 @@ function ExperienceForm() {
     const [keywordInput, setKeywordInput] = useState("");
     const [showDialog, setShowDialog] = useState(false);
     const [error, setError] = useState("");
+    const [imageError, setImageError] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleAddKeyword = (event) => {
@@ -113,6 +114,7 @@ function ExperienceForm() {
         setKeywords([]);
         setKeywordInput("");
         setError("");
+        setImageError(false);
         setShowDialog(false);
     };
 
@@ -292,9 +294,22 @@ function ExperienceForm() {
                             <p>
                                 <strong>Address:</strong> {address}
                             </p>
-                            <p>
-                                <strong>Image URL:</strong> {imageUrl}
-                            </p>
+                            <div className="dialog-image">
+                                <strong>Image:</strong>
+
+                                {imageError ? (
+                                    <p className="image-error">
+                                        Image could not be loaded. Please check the image URL.
+                                    </p>
+                                ) : (
+                                    <img
+                                        src={imageUrl}
+                                        alt={title}
+                                        className="experience-preview-image"
+                                        onError={() => setImageError(true)}
+                                    />
+                                )}
+                            </div>
                             <p>
                                 <strong>Rating:</strong> {rating}/5 stars
                             </p>
