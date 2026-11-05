@@ -1,29 +1,200 @@
+/* Code below created with AI assistance from chatGPT. */
+/* Transcript: https://oregonstateuniversity-my.sharepoint.com/:w:/g/personal/harrisr6_oregonstate_edu/IQBeWruOGYKtRJCqR3wQY04OAQb-4zGosjXMuJZV76Xwpms?e=cQa044  */
 
+/* Main container for the trip management page */
 .trips-container {
-  max-width: 500px;
-  margin: 30px auto;
-  padding: 20px;
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 30px;
 }
 
+/* Main page heading */
+.trips-container h2 {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+/* Page description */
+.trips-container > p {
+  color: #666;
+  margin-bottom: 25px;
+}
+
+/* Styles the create and search forms */
+/* Styles the create and search forms */
 .trips-container form {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 10px;
-  padding: 20px
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  width: fit-content;
+}
+/* Form labels */
+.trips-container label {
+  font-weight: 600;
 }
 
+/* Input fields */
 .trips-container input {
-  padding: 10px;
-  font-size: 16px;
+  padding: 11px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  min-width: 220px;
 }
 
+/* Buttons */
 .trips-container button {
   padding: 10px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
 }
 
-.trips-container h2 {
-  font-size: 32px;
-  font-weight: bold;
+/* Button hover effect */
+.trips-container button:hover {
+  opacity: 0.85;
+}
+
+/* Saved trips heading */
+.trips-container h3 {
+  font-size: 24px;
+  margin-top: 35px;
+  margin-bottom: 15px;
+}
+
+/* Saved trips table */
+.trips-container table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-top: 15px;
+  text-align: left;
+}
+
+/* Table column widths */
+.trips-container th:first-child,
+.trips-container td:first-child {
+  width: 40%;
+}
+
+.trips-container th:nth-child(2),
+.trips-container td:nth-child(2) {
+  width: 20%;
+}
+
+.trips-container th:nth-child(3),
+.trips-container td:nth-child(3) {
+  width: 20%;
+}
+
+.trips-container th:nth-child(4),
+.trips-container td:nth-child(4) {
+  width: 20%;
+}
+
+/* Table headers and cells */
+.trips-container th,
+.trips-container td {
+  padding: 15px 18px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Table headings */
+.trips-container th {
+  font-weight: 600;
+  border-bottom: 2px solid #ccc;
+}
+
+/* Horizontal lines between trips */
+.trips-container td {
+  border-bottom: 1px solid #ddd;
+}
+
+/* Remove bottom border from last row */
+.trips-container tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Keep action buttons side by side */
+.trips-container td:last-child {
+  white-space: nowrap;
+}
+
+.trips-container td:last-child button {
+  margin-right: 8px;
+}
+
+/* Responsive layout for smaller screens */
+@media (max-width: 700px) {
+  .trips-container {
+    padding: 15px;
+    margin: 20px auto;
+  }
+
+  .trips-container form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .trips-container form input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .trips-container table {
+    font-size: 13px;
+  }
+
+  .trips-container th,
+  .trips-container td {
+    padding: 10px 6px;
+  }
+
+  .trips-container td:last-child button {
+    margin-bottom: 5px;
+  }
+}
+
+/* Create and Edit buttons */
+.trips-container button[type="submit"],
+.edit-button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+}
+
+/* Save button */
+.save-button {
+  background-color: #16a34a;
+  color: white;
+  border: none;
+}
+
+/* Delete button */
+.delete-button {
+  background-color: #bb2323;
+  color: white;
+  border: none;
+}
+
+/* Cancel and Clear buttons */
+.cancel-button,
+.clear-button {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+}
+
+/* Hover effect */
+.trips-container button:hover {
+  opacity: 0.85;
 }
