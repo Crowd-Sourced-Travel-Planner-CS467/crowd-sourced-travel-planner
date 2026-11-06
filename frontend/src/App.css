@@ -17,8 +17,35 @@
 }
 
 .trip-link {
-  margin-top: auto
+  margin-top: auto;
 }
 
+.landing-welcome {
+  font-size: 1rem;
+  color: #718096;
+  margin: -24px 0 16px;
+}
 
+.landing-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
 
+.btn-logout {
+  background: none;
+  border: 1.5px solid #e53e3e;
+  border-radius: 6px;
+  color: #e53e3e;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 8px;
+  padding: 6px 20px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-logout:hover {
+  background: #e53e3e;
+  color: #fff;
+}
