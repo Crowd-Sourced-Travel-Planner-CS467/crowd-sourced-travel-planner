@@ -145,6 +145,7 @@ documents the GenAI interaction that led to ExperienceForm.css"
     background-color: #707070;
 }
 
+.cancel-button:disabled,
 .create-button:disabled {
     background-color: #bbb;
     cursor: not-allowed;
