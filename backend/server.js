@@ -5,13 +5,7 @@ const pool = require("./db");
 
 const tripsRouter = require("./routes/trips");
 
-const cors = require('cors');
-
 const app = express();
-
-app.use(cors({
-  origin: 'https://spindly-casket-q5x4vg6995ghxqx4-5173.app.github.dev'
-}));
 
 const PORT = process.env.PORT || 3000;
 
