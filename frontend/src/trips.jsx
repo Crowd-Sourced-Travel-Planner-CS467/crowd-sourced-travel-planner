@@ -22,14 +22,10 @@ function Trips() {
   // Retrieves saved trips from the backend and updates the displayed list.
   async function fetchTrips() {
     try {
-      const response = await fetch(
-        // TODO: confirm the backend URL for the team's deployemnt and replace this
-        'https://spindly-casket-q5x4vg6995ghxqx4-3000.app.github.dev/api/trips'
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to retrieve trips');
-      }
+        const response = await fetch('/api/trips');
+              if (!response.ok) {
+                throw new Error('Failed to retrieve trips');
+              }
 
       const data = await response.json();
       setTrips(data);
@@ -53,8 +49,7 @@ function Trips() {
     }
 
     try {
-      // TODO: confirm the backend URL for the team's deployemnt and replace this
-      const response = await fetch('https://spindly-casket-q5x4vg6995ghxqx4-3000.app.github.dev/api/trips', {
+        const response = await fetch('/api/trips', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,9 +77,9 @@ function Trips() {
     // Delete a trip
   async function deleteTrip(tripId) {
     try {
-      const response = await fetch(
-        `https://spindly-casket-q5x4vg6995ghxqx4-3000.app.github.dev/api/trips/${tripId}`,
-        {
+          const response = await fetch(
+            `/api/trips/${tripId}`,
+            {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -121,9 +116,9 @@ function Trips() {
       }
 
       try {
-        const response = await fetch(
-          `https://spindly-casket-q5x4vg6995ghxqx4-3000.app.github.dev/api/trips/${tripId}`,
-          {
+          const response = await fetch(
+            `/api/trips/${tripId}`,
+            {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
