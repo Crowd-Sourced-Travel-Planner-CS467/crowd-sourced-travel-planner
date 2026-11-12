@@ -2,6 +2,7 @@ const express = require("express");
 require("dotenv").config();
 
 const pool = require("./db");
+const experienceRoutes = require("./routes/experiences");
 
 const tripsRouter = require("./routes/trips");
 
@@ -12,6 +13,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use("/api/trips", tripsRouter);
+app.use("/api/experiences", experienceRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
