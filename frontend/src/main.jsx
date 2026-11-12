@@ -11,6 +11,8 @@ import Login from './pages/Login.jsx'
 import Registration from './pages/Registration.jsx'
 import AccountManagement from './pages/AccountManagement.jsx'
 
+import ExperienceSearch from './pages/ExperienceSearch.jsx'
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
@@ -18,6 +20,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/" element={<App />} />
         <Route path="/trip-management" element={<Trips />} />
         <Route path="/experiences/new" element={<ExperienceForm />} />
+        <Route path="/experiences" element={<ExperienceSearch />} />
 
         {/* User Management */}
         <Route path="/login" element={<Login />} />
