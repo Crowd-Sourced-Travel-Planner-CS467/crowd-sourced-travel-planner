@@ -233,3 +233,126 @@ documents the GenAI interaction that led to ExperienceForm.css"
     background-color: #fef2f2;
     border-radius: 6px;
 }
+
+/* Styles for the experience details page. */
+
+.experience-view-page {
+    min-height: 100vh;
+    padding: 40px 20px;
+}
+
+.experience-view-card,
+.experience-view-error {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.experience-view-card {
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    text-align: left;
+}
+
+.experience-view-header {
+    margin-bottom: 30px;
+}
+
+.experience-view-header,
+.experience-view-status,
+.experience-view-error {
+    text-align: center;
+}
+
+.experience-view-header h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+    overflow-wrap: anywhere;
+}
+
+.experience-created-date {
+    color: #777;
+    font-size: 14px;
+}
+
+.experience-view-section {
+    margin-bottom: 26px;
+}
+
+.experience-view-section h2 {
+    margin: 0 0 10px;
+    font-size: 19px;
+}
+
+.experience-view-section p {
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.experience-view-image {
+    display: block;
+    width: 100%;
+    max-height: 420px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #f3f4f6;
+}
+
+.experience-view-image-error,
+.experience-view-error {
+    color: #b42318;
+}
+
+.experience-view-image-error {
+    padding: 14px;
+    border-radius: 6px;
+    background: #fef2f2;
+}
+
+.experience-average-rating,
+.experience-view-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.experience-average-rating {
+    align-items: center;
+    gap: 10px;
+}
+
+.experience-average-stars {
+    color: #f5b301;
+    font-size: 26px;
+    letter-spacing: 2px;
+}
+
+.experience-view-keyword {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 16px;
+    background: #e7effb;
+    color: #244d83;
+    font-size: 14px;
+}
+
+.experience-view-mode {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+@media (max-width: 600px) {
+    .experience-view-page {
+        padding: 20px 12px;
+    }
+
+    .experience-view-card {
+        padding: 22px 18px;
+    }
+
+    .experience-view-header h1 {
+        font-size: 25px;
+    }
+}
