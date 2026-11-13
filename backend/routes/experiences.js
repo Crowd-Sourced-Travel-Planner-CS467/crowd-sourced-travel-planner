@@ -8,6 +8,11 @@
 // These transcripts: https://chatgpt.com/share/6aee540f-e514-83e9-99ca-a8070a4385d7 and https://chatgpt.com/share/6aee54a5-a088-83ea-a22e-1c43db12f8cd
 // document the GenAI interaction that led to code in geocoding.js, experiences.js, ExperienceForm.jsx, and experiences.test.js
 
+// Citation
+// The code handling the experience view page was generated with the help of ChatGPT.
+// These transcript links: https://chatgpt.com/share/6af67cf0-17e4-83e9-bfa2-3c8d5c20b1a9 and https://chatgpt.com/share/6af67df0-f978-83ea-a1ed-86fa32cdb705
+// document the GenAI interaction that led to ExperienceView.jsx and parts of ExperienceForm.css, experiences.js, and experiences.test.js
+
 const express = require("express");
 
 const pool = require("../db");
