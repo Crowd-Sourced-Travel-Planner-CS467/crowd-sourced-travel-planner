@@ -241,3 +241,72 @@ describe("POST /api/experiences", () => {
   });
 
 });
+
+describe("GET /api/experiences/:experienceId", () => {
+  let server;
+  let baseUrl;
+
+  const fakeExperienceRow = (overrides = {}) => ({
+    experience_id: "42",
+    user_id: "1",
+    title: "Sunset Cruise",
+    description: "Evening boat tour around the bay",
+    address: "Pier 39, San Francisco, CA",
+    latitude: 37.7749,
+    longitude: -122.4194,
+    image_url: "https://example.com/.jpg",
+    keywords: ["boat"],
+    ratings: [5, 4, 3],
+    ...overrides,
+  });
+
+  // Sends a GET for one experience id and returns the status and parsed JSON body.
+  const getExperience = async (experienceId) => {
+    const response = await fetch(`${baseUrl}/${experienceId}`);
+
+    return { status: response.status, body: await response.json() };
+  };
+
+  // Start a small app with only the experiences route on a random free port
+  before(async () => {
+    const app = express();
+    app.use(express.json());
+    app.use("/api/experiences", experienceRoutes);
+
+    await new Promise((resolve) => {
+      server = app.listen(0, resolve);
+    });
+
+    baseUrl = `http://localhost:${server.address().port}/api/experiences`;
+  });
+
+  after(() => server.close());
+
+  afterEach(() => mock.restoreAll());
+
+  // A valid id returns the experience with its rating values and a 200, and the id is passed to PostgreSQL as a parameter
+  test("returns the experience and its ratings for a valid id", async () => {
+    const row = fakeExperienceRow();
+    mock.method(pool, "query", async () => ({ rows: [row] }));
+
+    const { status, body } = await getExperience(42);
+
+    assert.strictEqual(status, 200);
+    assert.deepStrictEqual(body.experience, row);
+    assert.deepStrictEqual(body.experience.ratings, [5, 4, 3]);
+    assert.strictEqual(pool.query.mock.calls.length, 1);
+    assert.deepStrictEqual(pool.query.mock.calls[0].arguments[1], [42]);
+  });
+
+  // An id that has no matching row returns 404 instead of an empty experience
+  test("returns 404 when the experience does not exist", async () => {
+    mock.method(pool, "query", async () => ({ rows: [] }));
+
+    const { status, body } = await getExperience(999999);
+
+    assert.strictEqual(status, 404);
+    assert.strictEqual(body.message, "This experience could not be found.");
+    assert.strictEqual(body.experience, undefined);
+  });
+
+});
