@@ -8,6 +8,10 @@
 // These transcripts: https://chatgpt.com/share/6aee540f-e514-83e9-99ca-a8070a4385d7 and https://chatgpt.com/share/6aee54a5-a088-83ea-a22e-1c43db12f8cd
 // document the GenAI interaction that led to code in geocoding.js, experiences.js, ExperienceForm.jsx, and experiences.test.js
 
+// Citation
+// The code handling the experience view page was generated with the help of ChatGPT.
+// These transcript links: https://chatgpt.com/share/6af67cf0-17e4-83e9-bfa2-3c8d5c20b1a9 and https://chatgpt.com/share/6af67df0-f978-83ea-a1ed-86fa32cdb705
+// document the GenAI interaction that led to ExperienceView.jsx and parts of ExperienceForm.css, experiences.js, and experiences.test.js
 
 const { describe, test, before, after, beforeEach, afterEach, mock } = require("node:test");
 const assert = require("node:assert");
@@ -238,6 +242,75 @@ describe("POST /api/experiences", () => {
       body.message,
       "We couldn't verify the location right now. Please try again."
     );
+  });
+
+});
+
+describe("GET /api/experiences/:experienceId", () => {
+  let server;
+  let baseUrl;
+
+  const fakeExperienceRow = (overrides = {}) => ({
+    experience_id: "42",
+    user_id: "1",
+    title: "Sunset Cruise",
+    description: "Evening boat tour around the bay",
+    address: "Pier 39, San Francisco, CA",
+    latitude: 37.7749,
+    longitude: -122.4194,
+    image_url: "https://example.com/.jpg",
+    keywords: ["boat"],
+    ratings: [5, 4, 3],
+    ...overrides,
+  });
+
+  // Sends a GET for one experience id and returns the status and parsed JSON body.
+  const getExperience = async (experienceId) => {
+    const response = await fetch(`${baseUrl}/${experienceId}`);
+
+    return { status: response.status, body: await response.json() };
+  };
+
+  // Start a small app with only the experiences route on a random free port
+  before(async () => {
+    const app = express();
+    app.use(express.json());
+    app.use("/api/experiences", experienceRoutes);
+
+    await new Promise((resolve) => {
+      server = app.listen(0, resolve);
+    });
+
+    baseUrl = `http://localhost:${server.address().port}/api/experiences`;
+  });
+
+  after(() => server.close());
+
+  afterEach(() => mock.restoreAll());
+
+  // A valid id returns the experience with its rating values and a 200, and the id is passed to PostgreSQL as a parameter
+  test("returns the experience and its ratings for a valid id", async () => {
+    const row = fakeExperienceRow();
+    mock.method(pool, "query", async () => ({ rows: [row] }));
+
+    const { status, body } = await getExperience(42);
+
+    assert.strictEqual(status, 200);
+    assert.deepStrictEqual(body.experience, row);
+    assert.deepStrictEqual(body.experience.ratings, [5, 4, 3]);
+    assert.strictEqual(pool.query.mock.calls.length, 1);
+    assert.deepStrictEqual(pool.query.mock.calls[0].arguments[1], [42]);
+  });
+
+  // An id that has no matching row returns 404 instead of an empty experience
+  test("returns 404 when the experience does not exist", async () => {
+    mock.method(pool, "query", async () => ({ rows: [] }));
+
+    const { status, body } = await getExperience(999999);
+
+    assert.strictEqual(status, 404);
+    assert.strictEqual(body.message, "This experience could not be found.");
+    assert.strictEqual(body.experience, undefined);
   });
 
 });
