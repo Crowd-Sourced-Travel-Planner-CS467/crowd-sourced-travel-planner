@@ -137,4 +137,42 @@ router.post("/", async (req, res) => {
   }
 });
 
+// GET /api/experiences/:experienceId
+// Returns one experience and its rating values for the Experience View page
+router.get("/:experienceId", async (req, res) => {
+  const experienceId = Number(req.params.experienceId);
+
+  if (!Number.isSafeInteger(experienceId) || experienceId <= 0) {
+    return res.status(400).json({ message: "Please provide a valid experience ID." });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT
+         e.*,
+         COALESCE(
+           ARRAY_AGG(r.rating) FILTER (WHERE r.rating IS NOT NULL),
+           ARRAY[]::INTEGER[]
+         ) AS ratings
+       FROM public.experiences e
+       LEFT JOIN public.ratings r
+         ON r.experience_id = e.experience_id
+       WHERE e.experience_id = $1
+       GROUP BY e.experience_id`,
+      [experienceId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "This experience could not be found." });
+    }
+
+    return res.json({ experience: result.rows[0] });
+  } catch (error) {
+    console.error("Failed to retrieve experience:", error.message);
+    return res.status(500).json({
+      message: "We couldn't load this experience right now. Please try again.",
+    });
+  }
+});
+
 module.exports = router;
