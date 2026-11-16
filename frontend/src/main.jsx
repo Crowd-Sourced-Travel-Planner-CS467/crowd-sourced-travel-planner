@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
 
 import App from './App.jsx'
-import Trips from './trips.jsx'
+import Trips from './pages/trips';
 import ExperienceForm from './pages/ExperienceForm.jsx'
 import ExperienceView from './pages/ExperienceView.jsx'
 import Profile from './pages/Profile.jsx'

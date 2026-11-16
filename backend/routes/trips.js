@@ -4,12 +4,13 @@
 
 const express = require("express");
 const pool = require("../db");
-
 const router = express.Router();
+const authenticateToken = require("../middleware/authMiddleware");
 
 // Create new trips
-router.post("/", async (req, res) => {
-  const { user_id, trip_name } = req.body;
+router.post("/", authenticateToken, async (req, res) => {
+  const { trip_name } = req.body;
+  const user_id = req.user.user_id;
 
   if (!user_id || !trip_name || !trip_name.trim()) {
     return res.status(400).json({
@@ -39,12 +40,14 @@ router.post("/", async (req, res) => {
 });
 
 // Get already created trips
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT trip_id, user_id, trip_name, created_time
-       FROM public.trips
-       ORDER BY created_time DESC`
+      FROM public.trips
+      WHERE user_id = $1
+      ORDER BY created_time DESC`,
+      [req.user.user_id]
     );
 
     res.json(result.rows);
@@ -58,9 +61,9 @@ router.get("/", async (req, res) => {
 });
 
 // Delete a trip
-router.delete("/:trip_id", async (req, res) => {
+router.delete("/:trip_id", authenticateToken, async (req, res) => {
   const { trip_id } = req.params;
-  const { user_id } = req.body;
+  const user_id = req.user.user_id;
 
   try {
     const result = await pool.query(
@@ -84,9 +87,10 @@ router.delete("/:trip_id", async (req, res) => {
 });
 
 // Update an existing trip name
-router.put("/:trip_id", async (req, res) => {
+router.put("/:trip_id", authenticateToken, async (req, res) => {
   const { trip_id } = req.params;
-  const { user_id, trip_name } = req.body;
+  const { trip_name } = req.body;
+  const user_id = req.user.user_id;
 
   // Validate the trip name
   if (!trip_name || !trip_name.trim()) {
