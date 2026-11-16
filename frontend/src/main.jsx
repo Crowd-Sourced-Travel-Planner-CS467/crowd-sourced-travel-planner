@@ -9,6 +9,7 @@ import ExperienceForm from './pages/ExperienceForm.jsx'
 import Profile from './pages/Profile.jsx'
 import Login from './pages/Login.jsx'
 import Registration from './pages/Registration.jsx'
+import Register from "./pages/register.jsx";
 import AccountManagement from './pages/AccountManagement.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -21,9 +22,10 @@ createRoot(document.getElementById('root')).render(
 
         {/* User Management */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Registration />} />
+    
         <Route path="/profile" element={<Profile />} />
         <Route path="/account" element={<AccountManagement />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

@@ -1,0 +1,29 @@
+/*
+Citation:
+The css code for the Create a register page was generated with the help of ChatGPT.
+This transcript link https://chatgpt.com/share/6aee32d1-65f0-83ec-91be-d248ce456ce2
+documents the GenAI interaction that led to registercss"
+*/
+
+@import "./UserManagement.css";
+
+/* ── Error list ──────────────────────────────────────────────────────────── */
+
+.um-errors {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 6px;
+  color: #c53030;
+  font-size: 14px;
+  list-style: none;
+  padding: 10px 14px;
+  margin: 0 0 22px;
+}
+
+.um-errors li + li {
+  margin-top: 4px;
+}
+
+.um-errors li::before {
+  content: "• ";
+}
