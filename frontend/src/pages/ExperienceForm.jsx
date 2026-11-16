@@ -3,10 +3,23 @@ Citation:
 The code for the Create an Experience page was generated with the help of ChatGPT.
 This transcript link https://chatgpt.com/share/6ad83a24-8640-83ea-a7ae-43ff7156b007
 documents the GenAI interaction that led to ExperienceForm.jsx
+
+Citation:
+The code for handling geocoding the address into latitude and longitude coordinates was generated with the help of ChatGPT. 
+These transcripts: https://chatgpt.com/share/6aee540f-e514-83e9-99ca-a8070a4385d7 and https://chatgpt.com/share/6aee54a5-a088-83ea-a22e-1c43db12f8cd
+document the GenAI interaction that led to code in geocoding.js, experiences.js, ExperienceForm.jsx, and experiences.test.js
 */}
 
 import { useState } from "react";
 import "./ExperienceForm.css";
+
+// TODO: replace with the logged-in user's id once auth exists
+const TEMP_USER_ID = 1;
+
+// Must match the limits in backend/validation/experienceValidation.js
+const MAX_KEYWORDS = 10;
+const MAX_KEYWORD_LENGTH = 30;
+const MAX_DESCRIPTION_LENGTH = 2000;
 
 function ExperienceForm() {
     const [title, setTitle] = useState("");
@@ -17,6 +30,11 @@ function ExperienceForm() {
     const [keywords, setKeywords] = useState([]);
     const [keywordInput, setKeywordInput] = useState("");
     const [showDialog, setShowDialog] = useState(false);
+    const [error, setError] = useState("");
+    const [imageError, setImageError] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    // Stores the experience returned by the backend after successful creation.
+    const [createdExperience, setCreatedExperience] = useState(null);
 
     const handleAddKeyword = (event) => {
         if (event.key !== "Enter" && event.key !== ",") {
@@ -29,12 +47,14 @@ function ExperienceForm() {
 
         if (
             keyword &&
-            keywords.length < 10 &&
+            keyword.length <= MAX_KEYWORD_LENGTH &&
+            keywords.length < MAX_KEYWORDS &&
             !keywords.some(
                 (item) => item.toLowerCase() === keyword.toLowerCase()
             )
         ) {
             setKeywords([...keywords, keyword]);
+            setError("");
         }
 
         setKeywordInput("");
@@ -46,12 +66,78 @@ function ExperienceForm() {
         );
     };
 
-    const handleSubmit = (event) => {
+    // Saves the experience to the database, then shows the confirmation dialog or an error.
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        setShowDialog(true);
+        setError("");
+
+        if (rating === 0) {
+            setError("Please select a rating.");
+            return;
+        }
+
+        if (keywords.length === 0) {
+            setError("Please add at least one keyword. Press Enter or type a comma to add it.");
+            return;
+        }
+
+        // Prevent duplicate submissions while processing the request.
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch("/api/experiences", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: TEMP_USER_ID,
+                    title,
+                    description,
+                    address,
+                    imageUrl,
+                    rating,
+                    keywords,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Handle an address that Nominatim could not find.
+                if (data.code === "LOCATION_NOT_FOUND") {
+                    throw new Error(
+                        "We couldn't find this location. Please check the address and try again."
+                    );
+                }
+
+                // Handle a Nominatim network, rate-limit, or service error.
+                if (data.code === "LOCATION_VERIFICATION_FAILED") {
+                    throw new Error(
+                        "We couldn't verify the location right now. Please try again."
+                    );
+                }
+
+                // Handle database errors and other API errors.
+                throw new Error(
+                    data.message || "We couldn't create the experience right now. Please try again."
+                );
+            }
+
+            // Store the actual experience returned by PostgreSQL.
+            setCreatedExperience(data.experience);
+
+            // Display the confirmation dialog after successful creation.
+            setShowDialog(true);
+
+        } catch (err) {
+            // Keep the form populated so the user can correct or retry.
+            setError(err.message);
+        } finally {
+            // Re-enable the Create Experience button.
+            setIsSubmitting(false);
+        }
     };
 
-    const handleCancel = () => {
+    const resetForm = () => {
         setTitle("");
         setDescription("");
         setAddress("");
@@ -59,7 +145,11 @@ function ExperienceForm() {
         setRating(0);
         setKeywords([]);
         setKeywordInput("");
+        setError("");
+        setImageError(false);
         setShowDialog(false);
+        // Clear the previously created experience.
+        setCreatedExperience(null);
     };
 
     return (
@@ -93,6 +183,7 @@ function ExperienceForm() {
                             }
                             placeholder="Describe your experience"
                             rows={5}
+                            maxLength={MAX_DESCRIPTION_LENGTH}
                             required
                         />
                     </div>
@@ -117,11 +208,12 @@ function ExperienceForm() {
                             value={imageUrl}
                             onChange={(event) => setImageUrl(event.target.value)}
                             placeholder="https://example.com/image.jpg"
+                            required
                         />
                     </div>
 
                     <div className="form-group">
-                        <label>Average Rating</label>
+                        <label>Rating</label>
 
                         <div
                             className="star-rating"
@@ -138,7 +230,10 @@ function ExperienceForm() {
                                     className={
                                         star <= rating ? "star selected" : "star"
                                     }
-                                    onClick={() => setRating(star)}
+                                    onClick={() => {
+                                        setRating(star);
+                                        setError("");
+                                    }}
                                 >
                                     ★
                                 </button>
@@ -152,7 +247,7 @@ function ExperienceForm() {
 
                     <div className="form-group">
                         <label htmlFor="experience-keywords">
-                            Keywords (max 10)
+                            Keywords (1–{MAX_KEYWORDS})
                         </label>
 
                         <input
@@ -164,16 +259,17 @@ function ExperienceForm() {
                             }
                             onKeyDown={handleAddKeyword}
                             placeholder={
-                                keywords.length >= 10
-                                    ? "Maximum of 10 keywords reached"
+                                keywords.length >= MAX_KEYWORDS
+                                    ? `Maximum of ${MAX_KEYWORDS} keywords reached`
                                     : "Type a keyword and press Enter"
                             }
-                            disabled={keywords.length >= 10}
+                            maxLength={MAX_KEYWORD_LENGTH}
+                            disabled={keywords.length >= MAX_KEYWORDS}
                         />
 
                         <p className="help-text">
                             Press Enter or type a comma to add a keyword.
-                            {" "}{keywords.length}/10 keywords added.
+                            {" "}{keywords.length}/{MAX_KEYWORDS} keywords added.
                         </p>
 
                         <div className="keyword-list">
@@ -192,15 +288,20 @@ function ExperienceForm() {
                         </div>
                     </div>
 
+                    {error && <p className="error-text">{error}</p>}
+
                     <div className="form-actions">
-                        <button type="submit" className="create-button">
-                            Create Experience
+                        {/* Disable the Create Experience button while request is processing
+                        Prevents users from clicking twice and creating duplicate experiences */}
+                        <button type="submit" className="create-button" disabled={isSubmitting}>
+                            {isSubmitting ? "Creating..." : "Create Experience"}
                         </button>
 
                         <button
                             type="button"
                             className="cancel-button"
-                            onClick={handleCancel}
+                            onClick={resetForm}
+                            disabled={isSubmitting}
                         >
                             Cancel
                         </button>
@@ -208,7 +309,7 @@ function ExperienceForm() {
                 </form>
             </section>
 
-            {showDialog && (
+            {showDialog && createdExperience && (
                 <div className="dialog-overlay">
                     <section
                         className="confirmation-dialog"
@@ -220,24 +321,49 @@ function ExperienceForm() {
 
                         <div className="dialog-details">
                             <p>
-                                <strong>Title:</strong> {title}
+                                <strong>Title:</strong> {createdExperience.title}
                             </p>
+
                             <p>
-                                <strong>Description:</strong> {description}
+                                <strong>Description:</strong> {createdExperience.description}
                             </p>
+
                             <p>
-                                <strong>Address:</strong> {address}
+                                <strong>Address:</strong> {createdExperience.address}
                             </p>
+
                             <p>
-                                <strong>Image URL:</strong> {imageUrl || "Not provided"}
+                                <strong>Latitude:</strong> {createdExperience.latitude}
                             </p>
+
                             <p>
-                                <strong>Average Rating:</strong>{" "}
-                                {rating > 0 ? `${rating}/5 stars` : "Not rated"}
+                                <strong>Longitude:</strong> {createdExperience.longitude}
                             </p>
+
+                            <div className="dialog-image">
+                                <strong>Image:</strong>
+
+                                {imageError ? (
+                                    <p className="image-error">
+                                        Image could not be loaded. Please check the image URL.
+                                    </p>
+                                ) : (
+                                    <img
+                                        src={createdExperience.image_url}
+                                        alt={createdExperience.title}
+                                        className="experience-preview-image"
+                                        onError={() => setImageError(true)}
+                                    />
+                                )}
+                            </div>
+
+                            <p>
+                                <strong>Rating:</strong> {createdExperience.rating ?? rating}/5 stars
+                            </p>
+
                             <p>
                                 <strong>Keywords:</strong>{" "}
-                                {keywords.length > 0 ? keywords.join(", ") : "None"}
+                                {createdExperience.keywords.join(", ")}
                             </p>
                         </div>
 
@@ -245,7 +371,7 @@ function ExperienceForm() {
                             <button
                                 type="button"
                                 className="create-button"
-                                onClick={() => setShowDialog(false)}
+                                onClick={resetForm}
                             >
                                 Close
                             </button>
