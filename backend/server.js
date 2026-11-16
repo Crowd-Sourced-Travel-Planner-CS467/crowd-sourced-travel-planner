@@ -4,11 +4,16 @@ const pool = require("./db");
 const experienceRoutes = require("./routes/experiences");
 const authRoutes = require("./routes/authroutes.js");
 const { router: userRoutes } = require("./routes/userroutes.js");
+
+const tripsRouter = require("./routes/trips");
+
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
+app.use("/api/trips", tripsRouter);
 app.use("/api/experiences", experienceRoutes);
 
 //Auth routes

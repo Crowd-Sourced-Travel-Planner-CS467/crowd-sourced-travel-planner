@@ -3,10 +3,16 @@
 // This transcript https://docs.google.com/document/d/13X01sMsMOhjlLOLURQMMhm94s9a2zac8OnuDPs4kJUc/edit?tab=t.0
 // documents the GenAI interaction that led to the code in experiences.js and experiences.test.js.
 
+// Citation
+// The code for handling geocoding the address into latitude and longitude coordinates was generated with the help of ChatGPT. 
+// These transcripts: https://chatgpt.com/share/6aee540f-e514-83e9-99ca-a8070a4385d7 and https://chatgpt.com/share/6aee54a5-a088-83ea-a22e-1c43db12f8cd
+// document the GenAI interaction that led to code in geocoding.js, experiences.js, ExperienceForm.jsx, and experiences.test.js
 
-const { describe, test, before, after, afterEach, mock } = require("node:test");
+
+const { describe, test, before, after, beforeEach, afterEach, mock } = require("node:test");
 const assert = require("node:assert");
 const express = require("express");
+const geocoding = require("../services/geocoding");
 
 const pool = require("../db");
 const experienceRoutes = require("../routes/experiences");
@@ -108,6 +114,17 @@ describe("POST /api/experiences", () => {
 
   afterEach(() => mock.restoreAll());
 
+  // Use mock coordinates so tests never make real Nominatim requests.
+  const mockCoordinates = {
+    latitude: 37.7749,
+    longitude: -122.4194,
+  };
+
+  // Give each test a successful geocoding response by default.
+  beforeEach(() => {
+    mock.method(geocoding, "geocodeAddress", async () => mockCoordinates);
+  });
+
   // A valid request saves the experience and its rating in one transaction (BEGIN, both inserts, COMMIT),
   // links the rating to the new experience_id, and returns the cleaned data with a 201
   test("creates an experience and rating with valid data", async () => {
@@ -124,11 +141,16 @@ describe("POST /api/experiences", () => {
       "COMMIT",
     ]);
     assert.deepStrictEqual(body.experience.keywords, ["summer", "boat"]);
-    assert.strictEqual(body.experience.latitude, null);
-    assert.strictEqual(body.experience.longitude, null);
+    assert.strictEqual(body.experience.latitude, 37.7749);
+    assert.strictEqual(body.experience.longitude, -122.4194);
     assert.deepStrictEqual(client.queries[2].params, ["1", 1, 4]);
     assert.strictEqual(body.rating.rating, 4);
     assert.strictEqual(client.released, true);
+    // Correct address was geocoded
+    assert.strictEqual(
+      geocoding.geocodeAddress.mock.calls[0].arguments[0],
+      "Pier 39, San Francisco, CA"
+    );
   });
 
   // A user id that is not in the users table returns 400 and rolls back the transaction
@@ -159,7 +181,7 @@ describe("POST /api/experiences", () => {
     const { status, body } = await postExperience(validBody());
 
     assert.strictEqual(status, 500);
-    assert.strictEqual(body.message, "Could not create experience");
+    assert.strictEqual(body.message, "We couldn't create the experience right now. Please try again.");
     assert.deepStrictEqual(queryNames(client), [
       "BEGIN",
       "INSERT INTO public.experiences",
@@ -180,6 +202,42 @@ describe("POST /api/experiences", () => {
     const { status, body } = await postExperience(validBody());
 
     assert.strictEqual(status, 500);
-    assert.strictEqual(body.message, "Could not create experience");
+    assert.strictEqual(body.message, "We couldn't create the experience right now. Please try again.");
   });
+
+  // An address with no matching location should not be saved.
+  test("returns an error when Nominatim cannot find the address", async () => {
+    geocoding.geocodeAddress.mock.mockImplementation(async () => ({
+      latitude: null,
+      longitude: null,
+    }));
+
+    const { status, body } = await postExperience(validBody());
+
+    assert.strictEqual(status, 422);
+    assert.strictEqual(body.code, "LOCATION_NOT_FOUND");
+    assert.strictEqual(
+      body.message,
+      "We couldn't find this location. Please check the address and try again."
+    );
+  });
+
+  // A failed Nominatim request should return a service error.
+  test("returns an error when Nominatim cannot verify the location", async () => {
+    geocoding.geocodeAddress.mock.mockImplementation(async () => {
+      throw new Error("GEOCODING_REQUEST_FAILED");
+    });
+
+    mock.method(console, "error", () => {});
+
+    const { status, body } = await postExperience(validBody());
+
+    assert.strictEqual(status, 503);
+    assert.strictEqual(body.code, "LOCATION_VERIFICATION_FAILED");
+    assert.strictEqual(
+      body.message,
+      "We couldn't verify the location right now. Please try again."
+    );
+  });
+
 });
