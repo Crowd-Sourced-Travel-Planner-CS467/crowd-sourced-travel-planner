@@ -313,4 +313,15 @@ describe("GET /api/experiences/:experienceId", () => {
     assert.strictEqual(body.experience, undefined);
   });
 
+    // An invalid ID returns 400 without executing a database query.
+  test("returns 400 when the experience ID is invalid", async () => {
+      mock.method(pool, "query", async () => ({ rows: [] }));
+
+      const { status, body } = await getExperience("abc");
+
+      assert.strictEqual(status, 400);
+      assert.strictEqual(body.message, "Please provide a valid experience ID.");
+      assert.strictEqual(pool.query.mock.calls.length, 0);
+  });
+
 });
