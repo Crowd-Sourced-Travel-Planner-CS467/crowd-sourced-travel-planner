@@ -11,6 +11,7 @@ document the GenAI interaction that led to code in geocoding.js, experiences.js,
 */}
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./ExperienceForm.css";
 
 // TODO: replace with the logged-in user's id once auth exists
@@ -22,6 +23,7 @@ const MAX_KEYWORD_LENGTH = 30;
 const MAX_DESCRIPTION_LENGTH = 2000;
 
 function ExperienceForm() {
+    const navigate = useNavigate();
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [address, setAddress] = useState("");
@@ -64,6 +66,11 @@ function ExperienceForm() {
         setKeywords(
             keywords.filter((keyword) => keyword !== keywordToRemove)
         );
+    };
+
+    // Closes the confirmation dialog and goes to the new experience's page.
+    const handleCloseDialog = () => {
+        navigate(`/experiences/${createdExperience.experience_id}`);
     };
 
     // Saves the experience to the database, then shows the confirmation dialog or an error.
@@ -371,7 +378,7 @@ function ExperienceForm() {
                             <button
                                 type="button"
                                 className="create-button"
-                                onClick={resetForm}
+                                onClick={handleCloseDialog}
                             >
                                 Close
                             </button>

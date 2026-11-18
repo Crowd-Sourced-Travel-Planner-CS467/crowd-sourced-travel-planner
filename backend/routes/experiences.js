@@ -8,6 +8,11 @@
 // These transcripts: https://chatgpt.com/share/6aee540f-e514-83e9-99ca-a8070a4385d7 and https://chatgpt.com/share/6aee54a5-a088-83ea-a22e-1c43db12f8cd
 // document the GenAI interaction that led to code in geocoding.js, experiences.js, ExperienceForm.jsx, and experiences.test.js
 
+// Citation
+// The code handling the experience view page was generated with the help of ChatGPT.
+// These transcript links: https://chatgpt.com/share/6af67cf0-17e4-83e9-bfa2-3c8d5c20b1a9 and https://chatgpt.com/share/6af67df0-f978-83ea-a1ed-86fa32cdb705
+// document the GenAI interaction that led to ExperienceView.jsx and parts of ExperienceForm.css, experiences.js, and experiences.test.js
+
 const express = require("express");
 
 const pool = require("../db");
@@ -133,6 +138,44 @@ router.post("/", async (req, res) => {
     return res.status(500).json({
       code: "DATABASE_ERROR",
       message: "We couldn't create the experience right now. Please try again.",
+    });
+  }
+});
+
+// GET /api/experiences/:experienceId
+// Returns one experience and its rating values for the Experience View page
+router.get("/:experienceId", async (req, res) => {
+  const experienceId = Number(req.params.experienceId);
+
+  if (!Number.isSafeInteger(experienceId) || experienceId <= 0) {
+    return res.status(400).json({ message: "Please provide a valid experience ID." });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT
+         e.*,
+         COALESCE(
+           ARRAY_AGG(r.rating) FILTER (WHERE r.rating IS NOT NULL),
+           ARRAY[]::INTEGER[]
+         ) AS ratings
+       FROM public.experiences e
+       LEFT JOIN public.ratings r
+         ON r.experience_id = e.experience_id
+       WHERE e.experience_id = $1
+       GROUP BY e.experience_id`,
+      [experienceId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "This experience could not be found." });
+    }
+
+    return res.json({ experience: result.rows[0] });
+  } catch (error) {
+    console.error("Failed to retrieve experience:", error.message);
+    return res.status(500).json({
+      message: "We couldn't load this experience right now. Please try again.",
     });
   }
 });
