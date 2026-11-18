@@ -10,7 +10,10 @@ import ExperienceView from './pages/ExperienceView.jsx'
 import Profile from './pages/Profile.jsx'
 import Login from './pages/Login.jsx'
 import Registration from './pages/Registration.jsx'
+import Register from "./pages/register.jsx";
 import AccountManagement from './pages/AccountManagement.jsx'
+
+import ExperienceSearch from './pages/ExperienceSearch.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -20,12 +23,14 @@ createRoot(document.getElementById('root')).render(
         <Route path="/trip-management" element={<Trips />} />
         <Route path="/experiences/new" element={<ExperienceForm />} />
         <Route path="/experiences/:experienceId" element={<ExperienceView />} />
+        <Route path="/experiences" element={<ExperienceSearch />} />
 
         {/* User Management */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Registration />} />
+    
         <Route path="/profile" element={<Profile />} />
         <Route path="/account" element={<AccountManagement />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
