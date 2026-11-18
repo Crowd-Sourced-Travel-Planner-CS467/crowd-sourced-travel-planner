@@ -9,16 +9,38 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./ExperienceForm.css";
 
-// Calculate the average rating, returning null if there are no valid ratings
+// Filter out invalid ratings.
+function getValidRatings(ratings = []) {
+    return ratings.map(Number).filter(Number.isFinite);
+}
+
+// Calculate the average rating, returning null if there are no valid ratings.
 export function calculateAverageRating(ratings = []) {
-    const validRatings = ratings.map(Number).filter(Number.isFinite);
+    const validRatings = getValidRatings(ratings);
 
     return validRatings.length
         ? validRatings.reduce((sum, rating) => sum + rating, 0) / validRatings.length
         : null;
 }
 
-// Format the creation date as "Dec. 1, 2026"
+// Generate the visible stars and accessible label for a rating.
+function getRatingDisplay(rating) {
+    if (rating === null) {
+        return {
+            stars: "☆☆☆☆☆",
+            label: "No ratings yet",
+        };
+    }
+
+    const roundedRating = Math.round(rating);
+
+    return {
+        stars: `${"★".repeat(roundedRating)}${"☆".repeat(5 - roundedRating)}`,
+        label: `Average rating: ${rating.toFixed(1)} out of 5`,
+    };
+}
+
+// Format the creation date as "Dec. 1, 2026".
 function formatCreatedDate(dateValue) {
     if (!dateValue || isNaN(new Date(dateValue))) {
         return "Date unavailable";
@@ -62,7 +84,7 @@ function ExperienceView() {
 
                 setExperience(data.experience);
 
-                const ratings = data.experience.ratings || [];
+                const ratings = getValidRatings(data.experience.ratings || []);
                 setAverageRating(calculateAverageRating(ratings));
                 setRatingCount(ratings.length);
                 setImageError(false);
@@ -97,6 +119,9 @@ function ExperienceView() {
     // Convert the average into a one-decimal display value.
     const averageRatingText =
         averageRating === null ? "No ratings yet" : `${averageRating.toFixed(1)} / 5`;
+
+    // Generate the visible stars and accessible label.
+    const ratingDisplay = getRatingDisplay(averageRating);
 
     return (
         <main className="experience-view-page">
@@ -151,14 +176,11 @@ function ExperienceView() {
                 <section className="experience-view-section">
                     <h2>Average Rating</h2>
                     <div className="experience-average-rating">
-                        <span className="experience-average-stars" aria-label={
-                            averageRating === null
-                                ? "No ratings yet"
-                                : `Average rating: ${averageRating.toFixed(1)} out of 5`
-                        }>
-                            {averageRating === null
-                                ? "☆☆☆☆☆"
-                                : `${"★".repeat(Math.round(averageRating))}${"☆".repeat(5 - Math.round(averageRating))}`}
+                        <span
+                            className="experience-average-stars"
+                            aria-label={ratingDisplay.label}
+                        >
+                            {ratingDisplay.stars}
                         </span>
                         <span>
                             {averageRatingText} ({ratingCount}{" "}
