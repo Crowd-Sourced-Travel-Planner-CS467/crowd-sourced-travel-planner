@@ -4,7 +4,7 @@ const pool = require("./db");
 const experienceRoutes = require("./routes/experiences");
 const authRoutes = require("./routes/authroutes.js");
 const { router: userRoutes } = require("./routes/userroutes.js");
-
+const historyRouter = require("./routes/history.js");
 const tripsRouter = require("./routes/trips");
 
 const app = express();
@@ -21,6 +21,9 @@ app.use("/api/auth", authRoutes);
 
 //User routes
 app.use("/api/users", userRoutes);
+
+//History routes
+app.use("/api/history", historyRouter);
 
 //DB test
 app.get("/api/health", (req, res) => {
