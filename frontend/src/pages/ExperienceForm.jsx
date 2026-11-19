@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import "./ExperienceForm.css";
 
 // TODO: replace with the logged-in user's id once auth exists
-const TEMP_USER_ID = 1;
+//const TEMP_USER_ID = 1;
 
 // Must match the limits in backend/validation/experienceValidation.js
 const MAX_KEYWORDS = 10;
@@ -37,6 +37,16 @@ function ExperienceForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     // Stores the experience returned by the backend after successful creation.
     const [createdExperience, setCreatedExperience] = useState(null);
+
+    const [userId] = useState(() => {
+        try {
+            const user = localStorage.getItem("user");
+            const parsed = user ? JSON.parse(user) : null;
+            return parsed ? Number(parsed.user_id) : null;
+        } catch {
+            return null;
+        }
+    });
 
     const handleAddKeyword = (event) => {
         if (event.key !== "Enter" && event.key !== ",") {
@@ -78,6 +88,11 @@ function ExperienceForm() {
         event.preventDefault();
         setError("");
 
+        // ✅ Guard against unauthenticated submissions
+        if (!userId) {
+        setError("You must be logged in to create an experience.");
+        return; }
+
         if (rating === 0) {
             setError("Please select a rating.");
             return;
@@ -96,7 +111,7 @@ function ExperienceForm() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    userId: TEMP_USER_ID,
+                    userId: userId,
                     title,
                     description,
                     address,

@@ -37,6 +37,7 @@ function App() {
             </Link>
             <Link to="/profile">View Profile</Link>
             <Link to="/account">Manage Account</Link>
+            <Link to="/history">View History</Link>
             <button className="btn-logout" onClick={handleLogout}>
               Log out
             </button>
