@@ -13,6 +13,11 @@
 // These transcript links: https://chatgpt.com/share/6af67cf0-17e4-83e9-bfa2-3c8d5c20b1a9 and https://chatgpt.com/share/6af67df0-f978-83ea-a1ed-86fa32cdb705
 // document the GenAI interaction that led to ExperienceView.jsx and parts of ExperienceForm.css, experiences.js, and experiences.test.js
 
+// Citation
+// The code for incorporating user authentication into tests was generated with the help of ChatGPT.
+// These transcripts https://chatgpt.com/share/6aff3dab-2534-83e9-ad94-956e4c2a3ee3 and https://chatgpt.com/share/6aff3e47-c2c8-83ea-917d-1db944c50533
+// document the GenAI interaction that led to the code for incorporating user authentication in experiences.test.js
+
 const { describe, test, before, after, beforeEach, afterEach, mock } = require("node:test");
 const assert = require("node:assert");
 const express = require("express");
@@ -20,6 +25,16 @@ const geocoding = require("../services/geocoding");
 
 const pool = require("../db");
 const experienceRoutes = require("../routes/experiences");
+
+const jwt = require("jsonwebtoken");
+
+const TEST_TOKEN = jwt.sign(
+  {
+    user_id: 1,
+    email: "test@example.com",
+  },
+  process.env.JWT_SECRET || "change_this_secret_in_production"
+);
 
 // A request body that passes validation; each test overrides only the field it is checking.
 const validBody = (overrides = {}) => ({
@@ -92,13 +107,19 @@ describe("POST /api/experiences", () => {
 
   // Sends a POST to the experiences route and returns the status and parsed JSON body.
   const postExperience = async (body) => {
-    const response = await fetch(baseUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+      const response = await fetch(baseUrl, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${TEST_TOKEN}`,
+          },
+          body: JSON.stringify(body),
+      });
 
-    return { status: response.status, body: await response.json() };
+      return {
+          status: response.status,
+          body: await response.json(),
+      };
   };
 
   // Start a small app with only the experiences route on a random free port
@@ -299,7 +320,7 @@ describe("GET /api/experiences/:experienceId", () => {
     assert.deepStrictEqual(body.experience, row);
     assert.deepStrictEqual(body.experience.ratings, [5, 4, 3]);
     assert.strictEqual(pool.query.mock.calls.length, 1);
-    assert.deepStrictEqual(pool.query.mock.calls[0].arguments[1], [42]);
+    assert.deepStrictEqual(pool.query.mock.calls[0].arguments[1], [42, null]);
   });
 
   // An id that has no matching row returns 404 instead of an empty experience

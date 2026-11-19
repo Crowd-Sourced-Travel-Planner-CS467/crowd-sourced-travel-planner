@@ -147,17 +147,6 @@ describe("validateExperience", () => {
     });
   });
 
-  // User id must be a positive whole number (temporary until auth is complete)
-  describe("user id", () => {
-    for (const userId of [0, -1, 1.5, "abc", "1", true, undefined]) {
-      test(`rejects ${JSON.stringify(userId) ?? "undefined"}`, () => {
-        const { errors } = validateExperience(validBody({ userId }));
-
-        assert.ok(errors.includes(USER_ID_ERROR));
-      });
-    }
-  });
-
   // Image URL must be a valid http or https URL, which blocks javascript: and other schemes
   describe("image URL", () => {
     for (const imageUrl of ["javascript:alert(1)", "ftp://example.com/a.jpg", "not a url", "example.com/a.jpg"]) {
