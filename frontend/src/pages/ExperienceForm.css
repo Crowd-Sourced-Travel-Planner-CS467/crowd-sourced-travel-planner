@@ -331,6 +331,9 @@ document the GenAI interaction that led to ExperienceView.jsx and parts of Exper
     color: #f5b301;
     font-size: 26px;
     letter-spacing: 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
 }
 
 .experience-view-keyword {
@@ -360,4 +363,68 @@ document the GenAI interaction that led to ExperienceView.jsx and parts of Exper
     .experience-view-header h1 {
         font-size: 25px;
     }
+}
+
+/* Creator actions stay aligned to the lower-right edge of the experience card. */
+.experience-owner-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+/* Red delete button to distinguish destructive actions. */
+.delete-button {
+    padding: 11px 18px;
+    border: none;
+    border-radius: 6px;
+    background-color: #c93636;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+.delete-button:hover:not(:disabled) {
+    background-color: #a92323;
+}
+
+.delete-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.delete-button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* Individual rating stars on the experience view page. */
+.user-rating-stars {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.user-rating-stars .star:disabled {
+    cursor: default;
+    opacity: 1;
+}
+
+/* Separate the average rating from the individual rating. */
+.average-rating-heading {
+    margin-top: 22px !important;
+}
+
+@media (max-width: 600px) {
+    .experience-owner-actions {
+        flex-wrap: wrap;
+    }
+}
+
+.rating-updated-label {
+    color: #287a43;
+    font-size: 0.9rem;
+    font-weight: 600;
 }

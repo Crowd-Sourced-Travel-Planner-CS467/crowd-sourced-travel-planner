@@ -8,36 +8,185 @@ Citation:
 The code for handling geocoding the address into latitude and longitude coordinates was generated with the help of ChatGPT. 
 These transcripts: https://chatgpt.com/share/6aee540f-e514-83e9-99ca-a8070a4385d7 and https://chatgpt.com/share/6aee54a5-a088-83ea-a22e-1c43db12f8cd
 document the GenAI interaction that led to code in geocoding.js, experiences.js, ExperienceForm.jsx, and experiences.test.js
+
+Citation:
+The code for incorporating user authentication, adding update and delete experience, and update rating was generated with the help of ChatGPT
+These transcipts: https://chatgpt.com/share/6aff3dab-2534-83e9-ad94-956e4c2a3ee3 and https://chatgpt.com/share/6aff3e47-c2c8-83ea-917d-1db944c50533
+document the GenAI interaction that led to code in ExperienceForm.jsx, ExperienceView.jsx, experiences.js, experienceValidation.js, 
+experienceValidation.test.js, and expereiences.test.js
 */}
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import "./ExperienceForm.css";
 
-// TODO: replace with the logged-in user's id once auth exists
-const TEMP_USER_ID = 1;
-
-// Must match the limits in backend/validation/experienceValidation.js
 const MAX_KEYWORDS = 10;
 const MAX_KEYWORD_LENGTH = 30;
 const MAX_DESCRIPTION_LENGTH = 2000;
 
+function isValidKeyword(keyword, existingKeywords) {
+    return (
+        keyword.length > 0 &&
+        keyword.length <= MAX_KEYWORD_LENGTH &&
+        existingKeywords.length < MAX_KEYWORDS &&
+        !existingKeywords.some(
+            (item) =>
+                item.toLowerCase() === keyword.toLowerCase()
+        )
+    );
+}
+
+// Check that the URL is valid and that the image loads.
+function validateImage(imageUrl) {
+    return new Promise((resolve) => {
+        let parsed;
+
+        try {
+            parsed = new URL(imageUrl);
+        } catch {
+            return resolve(false);
+        }
+
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+            return resolve(false);
+        }
+
+        const image = new Image();
+        const finish = (result) => {
+            clearTimeout(timeout);
+            resolve(result);
+        };
+
+        // Allow up to 10 seconds for the image to load.
+        const timeout = setTimeout(() => {
+            image.src = "";
+            finish(false);
+        }, 10000);
+
+        image.onload = () => finish(true);
+        image.onerror = () => finish(false);
+
+        image.src = imageUrl;
+    });
+}
+
+// Return an error message for an unsuccessful API response.
+function getApiErrorMessage(data, isEditMode) {
+    if (data.code === "LOCATION_NOT_FOUND") {
+        return "We couldn't find this location. Please check the address and try again.";
+    }
+
+    if (data.code === "LOCATION_VERIFICATION_FAILED") {
+        return "We couldn't verify the location right now. Please try again.";
+    }
+
+    return (
+        data.message ||
+        `We couldn't ${
+            isEditMode ? "update" : "create"
+        } the experience. Please try again.`
+    );
+}
+
 function ExperienceForm() {
     const navigate = useNavigate();
+    const { experienceId } = useParams();
+
+    // An experienceId means the form is being used in edit mode.
+    const isEditMode = Boolean(experienceId);
+
+    const token = localStorage.getItem("token");
+
+    const [user] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem("user"));
+        } catch {
+            return null;
+        }
+    });
+
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [address, setAddress] = useState("");
     const [imageUrl, setImageUrl] = useState("");
     const [rating, setRating] = useState(0);
+
+    // Store the rating that was originally saved for this experience.
+    // This lets the form determine whether the creator changed it.
+    const [initialRating, setInitialRating] = useState(0);
+
     const [keywords, setKeywords] = useState([]);
     const [keywordInput, setKeywordInput] = useState("");
+
     const [showDialog, setShowDialog] = useState(false);
     const [error, setError] = useState("");
     const [imageError, setImageError] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    // Stores the experience returned by the backend after successful creation.
-    const [createdExperience, setCreatedExperience] = useState(null);
+    const [isLoading, setIsLoading] = useState(isEditMode);
 
+    // Load an existing experience and populate the form.
+    const loadExperience = async () => {
+        try {
+            const response = await fetch(
+                `/api/experiences/${encodeURIComponent(experienceId)}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message || "Unable to load this experience."
+                );
+            }
+
+            // Only the creator can edit the experience.
+            if (
+                String(data.experience.user_id) !==
+                String(user?.user_id)
+            ) {
+                throw new Error(
+                    "You can only edit your own experiences."
+                );
+            }
+
+            // Populate the form with the existing experience details.
+            const item = data.experience;
+
+            setTitle(item.title || "");
+            setDescription(item.description || "");
+            setAddress(item.address || "");
+            setImageUrl(item.image_url || "");
+            setKeywords(item.keywords || []);
+
+            // Load the creator's existing rating.
+            // Save it as both the current and original rating.
+            const existingRating = Number(
+                item.current_user_rating ?? 0
+            );
+
+            setRating(existingRating);
+            setInitialRating(existingRating);
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Load the existing experience when the form opens in edit mode.
+    useEffect(() => {
+        if (isEditMode) {
+            loadExperience();
+        }
+    }, [experienceId, isEditMode, token, user?.user_id]);
+
+    // Add a keyword when Enter or comma is pressed.
     const handleAddKeyword = (event) => {
         if (event.key !== "Enter" && event.key !== ",") {
             return;
@@ -47,131 +196,193 @@ function ExperienceForm() {
 
         const keyword = keywordInput.trim().replace(/,$/, "");
 
-        if (
-            keyword &&
-            keyword.length <= MAX_KEYWORD_LENGTH &&
-            keywords.length < MAX_KEYWORDS &&
-            !keywords.some(
-                (item) => item.toLowerCase() === keyword.toLowerCase()
-            )
-        ) {
-            setKeywords([...keywords, keyword]);
+        if (isValidKeyword(keyword, keywords)) {
+            setKeywords((current) => [...current, keyword]);
             setError("");
         }
 
         setKeywordInput("");
     };
 
+    // Remove a keyword from the form.
     const handleRemoveKeyword = (keywordToRemove) => {
-        setKeywords(
-            keywords.filter((keyword) => keyword !== keywordToRemove)
+        setKeywords((current) =>
+            current.filter(
+                (keyword) => keyword !== keywordToRemove
+            )
         );
     };
 
-    // Closes the confirmation dialog and goes to the new experience's page.
-    const handleCloseDialog = () => {
-        navigate(`/experiences/${createdExperience.experience_id}`);
-    };
-
-    // Saves the experience to the database, then shows the confirmation dialog or an error.
-    const handleSubmit = async (event) => {
+    // Validate required fields, then show the preview.
+    // This function does NOT save anything to the database.
+    const handlePreview = async (event) => {
         event.preventDefault();
         setError("");
 
-        if (rating === 0) {
+        // A new experience requires an initial rating.
+        // An existing experience already has a rating, but its creator
+        // can change that rating before confirming the update.
+        if (!rating || rating < 1 || rating > 5) {
             setError("Please select a rating.");
             return;
         }
 
-        if (keywords.length === 0) {
-            setError("Please add at least one keyword. Press Enter or type a comma to add it.");
+        if (!keywords.length) {
+            setError(
+                "Please add at least one keyword. Press Enter or type a comma to add it."
+            );
             return;
         }
 
-        // Prevent duplicate submissions while processing the request.
         setIsSubmitting(true);
 
         try {
-            const response = await fetch("/api/experiences", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    userId: TEMP_USER_ID,
-                    title,
-                    description,
-                    address,
-                    imageUrl,
-                    rating,
-                    keywords,
-                }),
-            });
+            // Validate the image before displaying the preview.
+            const imageIsValid = await validateImage(imageUrl);
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                // Handle an address that Nominatim could not find.
-                if (data.code === "LOCATION_NOT_FOUND") {
-                    throw new Error(
-                        "We couldn't find this location. Please check the address and try again."
-                    );
-                }
-
-                // Handle a Nominatim network, rate-limit, or service error.
-                if (data.code === "LOCATION_VERIFICATION_FAILED") {
-                    throw new Error(
-                        "We couldn't verify the location right now. Please try again."
-                    );
-                }
-
-                // Handle database errors and other API errors.
-                throw new Error(
-                    data.message || "We couldn't create the experience right now. Please try again."
-                );
+            if (!imageIsValid) {
+                setImageError(true);
+                setError("Please enter a valid image URL.");
+                return;
             }
 
-            // Store the actual experience returned by PostgreSQL.
-            setCreatedExperience(data.experience);
+            setImageError(false);
 
-            // Display the confirmation dialog after successful creation.
+            // Open the preview using the current form values.
             setShowDialog(true);
 
-        } catch (err) {
-            // Keep the form populated so the user can correct or retry.
-            setError(err.message);
         } finally {
-            // Re-enable the Create Experience button.
             setIsSubmitting(false);
         }
     };
 
-    const resetForm = () => {
-        setTitle("");
-        setDescription("");
-        setAddress("");
-        setImageUrl("");
-        setRating(0);
-        setKeywords([]);
-        setKeywordInput("");
+    // Save the experience only after the user confirms in the dialog.
+    const handleConfirm = async () => {
         setError("");
-        setImageError(false);
-        setShowDialog(false);
-        // Clear the previously created experience.
-        setCreatedExperience(null);
+        setIsSubmitting(true);
+
+        try {
+            // Include the rating when creating an experience.
+            // During an update, include it only if the creator changed it.
+            const requestBody = {
+                title,
+                description,
+                address,
+                imageUrl,
+                keywords,
+            };
+
+            if (!isEditMode || rating !== initialRating) {
+                requestBody.rating = rating;
+            }
+
+            const response = await fetch(
+                isEditMode
+                    ? `/api/experiences/${experienceId}`
+                    : "/api/experiences",
+                {
+                    method: isEditMode ? "PUT" : "POST",
+
+                    headers: {
+                        "Content-Type": "application/json",
+
+                        // The backend verifies this token and determines
+                        // the actual user_id from the authenticated session.
+                        Authorization: `Bearer ${token}`,
+                    },
+
+                    body: JSON.stringify(requestBody),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(getApiErrorMessage(data, isEditMode));
+            }
+
+            // Navigate to the saved experience using its database ID.
+            const saved = data.experience;
+
+            navigate(
+                `/experiences/${saved.experience_id}`,
+                { replace: true }
+            );
+
+        } catch (err) {
+            // Close the dialog but preserve the form values.
+            setShowDialog(false);
+            setError(err.message);
+
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
+    // Canceling the main form has different behavior in each mode.
+    const handleFormCancel = () => {
+        if (isEditMode) {
+            // Return to the existing experience.
+            navigate(`/experiences/${experienceId}`);
+        } else {
+            navigate("/");
+        }
+    };
+
+    // Do not display the experience form actions to logged-out users.
+    if (!token || !user) {
+        return (
+            <main className="experience-page">
+                <section className="experience-card">
+                    <p>
+                        Please log in to{" "}
+                        {isEditMode ? "edit" : "create"} an experience.
+                    </p>
+
+                    <button
+                        type="button"
+                        className="create-button"
+                        onClick={() => navigate("/login")}
+                    >
+                        Log in
+                    </button>
+                </section>
+            </main>
+        );
+    }
+
+    if (isLoading) {
+        return (
+            <main className="experience-page">
+                <p>Loading experience...</p>
+            </main>
+        );
+    }
 
     return (
         <main className="experience-page">
             <section className="experience-card">
-                <h1>Create an Experience</h1>
 
-                <form onSubmit={handleSubmit}>
+                <h1>
+                    {isEditMode
+                        ? "Update Experience"
+                        : "Create an Experience"}
+                </h1>
+
+                <form onSubmit={handlePreview}>
+
                     <div className="form-group">
-                        <label htmlFor="experience-title">Title</label>
+                        <label htmlFor="experience-title">
+                            Title
+                        </label>
+
                         <input
                             id="experience-title"
                             type="text"
                             value={title}
-                            onChange={(event) => setTitle(event.target.value)}
+                            onChange={(e) =>
+                                setTitle(e.target.value)
+                            }
                             placeholder="Enter an experience title"
                             maxLength={250}
                             required
@@ -182,11 +393,12 @@ function ExperienceForm() {
                         <label htmlFor="experience-description">
                             Description
                         </label>
+
                         <textarea
                             id="experience-description"
                             value={description}
-                            onChange={(event) =>
-                                setDescription(event.target.value)
+                            onChange={(e) =>
+                                setDescription(e.target.value)
                             }
                             placeholder="Describe your experience"
                             rows={5}
@@ -196,31 +408,45 @@ function ExperienceForm() {
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="experience-address">Address</label>
+                        <label htmlFor="experience-address">
+                            Address
+                        </label>
+
                         <input
                             id="experience-address"
                             type="text"
                             value={address}
-                            onChange={(event) => setAddress(event.target.value)}
+                            onChange={(e) =>
+                                setAddress(e.target.value)
+                            }
                             placeholder="Enter the location address"
                             required
                         />
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="experience-image">Image URL</label>
+                        <label htmlFor="experience-image">
+                            Image URL
+                        </label>
+
                         <input
                             id="experience-image"
-                            type="url"
+                            type="text"
                             value={imageUrl}
-                            onChange={(event) => setImageUrl(event.target.value)}
+                            onChange={(e) => {
+                                setImageUrl(e.target.value);
+                                setImageError(false);
+                            }}
                             placeholder="https://example.com/image.jpg"
                             required
                         />
                     </div>
 
+                    {/* The creator can select or change the rating in either mode. */}
                     <div className="form-group">
-                        <label>Rating</label>
+                        <label>
+                            {isEditMode ? "Initial Rating" : "Rating"}
+                        </label>
 
                         <div
                             className="star-rating"
@@ -233,23 +459,34 @@ function ExperienceForm() {
                                     type="button"
                                     role="radio"
                                     aria-checked={rating === star}
-                                    aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                                    aria-label={`${star} star${
+                                        star > 1 ? "s" : ""
+                                    }`}
                                     className={
-                                        star <= rating ? "star selected" : "star"
+                                        star <= rating
+                                            ? "star selected"
+                                            : "star"
                                     }
-                                    onClick={() => {
-                                        setRating(star);
-                                        setError("");
-                                    }}
+                                    onClick={() =>
+                                        setRating(star)
+                                    }
                                 >
                                     ★
                                 </button>
                             ))}
 
                             <span className="rating-label">
-                {rating === 0 ? "Select a rating" : `${rating} out of 5`}
-              </span>
+                                {rating === 0
+                                    ? "Select a rating"
+                                    : `${rating} out of 5`}
+                            </span>
                         </div>
+
+                        {isEditMode && rating !== initialRating && (
+                            <p className="help-text">
+                                Your initial rating will be updated.
+                            </p>
+                        )}
                     </div>
 
                     <div className="form-group">
@@ -261,8 +498,8 @@ function ExperienceForm() {
                             id="experience-keywords"
                             type="text"
                             value={keywordInput}
-                            onChange={(event) =>
-                                setKeywordInput(event.target.value)
+                            onChange={(e) =>
+                                setKeywordInput(e.target.value)
                             }
                             onKeyDown={handleAddKeyword}
                             placeholder={
@@ -271,52 +508,75 @@ function ExperienceForm() {
                                     : "Type a keyword and press Enter"
                             }
                             maxLength={MAX_KEYWORD_LENGTH}
-                            disabled={keywords.length >= MAX_KEYWORDS}
+                            disabled={
+                                keywords.length >= MAX_KEYWORDS
+                            }
                         />
 
                         <p className="help-text">
                             Press Enter or type a comma to add a keyword.
-                            {" "}{keywords.length}/{MAX_KEYWORDS} keywords added.
+                            {" "}
+                            {keywords.length}/{MAX_KEYWORDS} keywords added.
                         </p>
 
                         <div className="keyword-list">
                             {keywords.map((keyword) => (
-                                <span className="keyword-tag" key={keyword}>
-                  {keyword}
+                                <span
+                                    className="keyword-tag"
+                                    key={keyword}
+                                >
+                                    {keyword}
+
                                     <button
                                         type="button"
-                                        onClick={() => handleRemoveKeyword(keyword)}
+                                        onClick={() =>
+                                            handleRemoveKeyword(keyword)
+                                        }
                                         aria-label={`Remove ${keyword}`}
                                     >
-                    ×
-                  </button>
-                </span>
+                                        ×
+                                    </button>
+                                </span>
                             ))}
                         </div>
                     </div>
 
-                    {error && <p className="error-text">{error}</p>}
+                    {error && (
+                        <p className="error-text" role="alert">
+                            {error}
+                        </p>
+                    )}
 
+                    {/* These actions are only rendered for logged-in users. */}
                     <div className="form-actions">
-                        {/* Disable the Create Experience button while request is processing
-                        Prevents users from clicking twice and creating duplicate experiences */}
-                        <button type="submit" className="create-button" disabled={isSubmitting}>
-                            {isSubmitting ? "Creating..." : "Create Experience"}
+
+                        <button
+                            type="submit"
+                            className="create-button"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting
+                                ? "Checking..."
+                                : isEditMode
+                                    ? "Update"
+                                    : "Create"}
                         </button>
 
                         <button
                             type="button"
                             className="cancel-button"
-                            onClick={resetForm}
+                            onClick={handleFormCancel}
                             disabled={isSubmitting}
                         >
                             Cancel
                         </button>
+
                     </div>
                 </form>
             </section>
 
-            {showDialog && createdExperience && (
+            {/* Preview dialog: values come directly from the form state. */}
+            {showDialog && (
                 <div className="dialog-overlay">
                     <section
                         className="confirmation-dialog"
@@ -324,68 +584,91 @@ function ExperienceForm() {
                         aria-modal="true"
                         aria-labelledby="experience-dialog-title"
                     >
-                        <h2 id="experience-dialog-title">Experience Details</h2>
+                        <h2 id="experience-dialog-title">
+                            Preview Experience
+                        </h2>
 
                         <div className="dialog-details">
+
                             <p>
-                                <strong>Title:</strong> {createdExperience.title}
+                                <strong>Title:</strong> {title}
                             </p>
 
                             <p>
-                                <strong>Description:</strong> {createdExperience.description}
+                                <strong>Description:</strong>{" "}
+                                {description}
                             </p>
 
                             <p>
-                                <strong>Address:</strong> {createdExperience.address}
+                                <strong>Address:</strong> {address}
                             </p>
 
                             <p>
-                                <strong>Latitude:</strong> {createdExperience.latitude}
-                            </p>
-
-                            <p>
-                                <strong>Longitude:</strong> {createdExperience.longitude}
+                                <strong>Geo-location:</strong>{" "}
+                                Coordinates will be verified when you{" "}
+                                {isEditMode ? "update" : "create"} the experience.
                             </p>
 
                             <div className="dialog-image">
                                 <strong>Image:</strong>
 
-                                {imageError ? (
-                                    <p className="image-error">
-                                        Image could not be loaded. Please check the image URL.
-                                    </p>
-                                ) : (
-                                    <img
-                                        src={createdExperience.image_url}
-                                        alt={createdExperience.title}
-                                        className="experience-preview-image"
-                                        onError={() => setImageError(true)}
-                                    />
-                                )}
+                                <img
+                                    src={imageUrl}
+                                    alt={title}
+                                    className="experience-preview-image"
+                                    onError={() => setImageError(true)}
+                                />
                             </div>
 
+                            {imageError && (
+                                <p className="error-text">
+                                    Please enter a valid image URL.
+                                </p>
+                            )}
+
                             <p>
-                                <strong>Rating:</strong> {createdExperience.rating ?? rating}/5 stars
+                                <strong>Initial rating:</strong>{" "}
+                                {rating}/5 stars
                             </p>
 
                             <p>
                                 <strong>Keywords:</strong>{" "}
-                                {createdExperience.keywords.join(", ")}
+                                {keywords.join(", ")}
                             </p>
+
                         </div>
 
                         <div className="dialog-actions">
+
+                            {/* This button performs the actual database operation. */}
                             <button
                                 type="button"
                                 className="create-button"
-                                onClick={handleCloseDialog}
+                                onClick={handleConfirm}
+                                disabled={isSubmitting || imageError}
                             >
-                                Close
+                                {isSubmitting
+                                    ? "Saving..."
+                                    : isEditMode
+                                        ? "Update"
+                                        : "Create"}
                             </button>
+
+                            {/* Cancel closes the dialog without saving. */}
+                            <button
+                                type="button"
+                                className="cancel-button"
+                                onClick={() => setShowDialog(false)}
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </button>
+
                         </div>
                     </section>
                 </div>
             )}
+
         </main>
     );
 }
