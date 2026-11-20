@@ -25,6 +25,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/" element={<App />} />
         <Route path="/trip-management" element={<Trips />} />
         <Route path="/experiences/new" element={<ExperienceForm />} />
+        <Route path="/experiences/:experienceId/edit" element={<ExperienceForm />}/>
         <Route path="/experiences/:experienceId" element={<ExperienceView />} />
         <Route path="/experiences" element={<ExperienceSearch />} />
 
