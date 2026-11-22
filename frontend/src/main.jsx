@@ -10,7 +10,7 @@ import ExperienceView from './pages/ExperienceView.jsx'
 import Profile from './pages/Profile.jsx'
 import Login from './pages/Login.jsx'
 import Registration from './pages/Registration.jsx'
-import Register from "./pages/Register.jsx"
+import Register from "./pages/register.jsx"
 import AccountManagement from './pages/AccountManagement.jsx'
 
 import ExperienceSearch from './pages/ExperienceSearch.jsx'
