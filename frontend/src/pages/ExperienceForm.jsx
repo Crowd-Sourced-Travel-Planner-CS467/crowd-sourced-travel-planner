@@ -603,12 +603,6 @@ function ExperienceForm() {
                                 <strong>Address:</strong> {address}
                             </p>
 
-                            <p>
-                                <strong>Geo-location:</strong>{" "}
-                                Coordinates will be verified when you{" "}
-                                {isEditMode ? "update" : "create"} the experience.
-                            </p>
-
                             <div className="dialog-image">
                                 <strong>Image:</strong>
 
