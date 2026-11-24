@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import './App.css'
+
 function App() {
   const navigate = useNavigate();
+
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem("user");
@@ -10,11 +12,13 @@ function App() {
     } catch {
       return null;
     }});
+
   function handleLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
     navigate("/", { replace: true }); }
+
   return (
     <main className="landing">
       <h1 className="landing-title">Crowd-Sourced Travel Planner</h1>

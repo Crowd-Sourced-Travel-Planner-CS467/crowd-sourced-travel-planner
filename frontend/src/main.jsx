@@ -17,27 +17,30 @@ import ExperienceSearch from './pages/ExperienceSearch.jsx'
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import History from "./pages/History.jsx";
+import AppLayout from './components/AppLayout';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/trip-management" element={<Trips />} />
-        <Route path="/experiences/new" element={<ExperienceForm />} />
-        <Route path="/experiences/:experienceId/edit" element={<ExperienceForm />}/>
-        <Route path="/experiences/:experienceId" element={<ExperienceView />} />
-        <Route path="/experiences" element={<ExperienceSearch />} />
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<App />} />
+          <Route path="/trip-management" element={<Trips />} />
+          <Route path="/experiences/new" element={<ExperienceForm />} />
+          <Route path="/experiences/:experienceId/edit" element={<ExperienceForm />}/>
+          <Route path="/experiences/:experienceId" element={<ExperienceView />} />
+          <Route path="/experiences" element={<ExperienceSearch />} />
 
-        {/* User Management */}
-        <Route path="/login" element={<Login />} />
-    
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/account" element={<AccountManagement />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/history" element={<History />} />
+          {/* User Management */}
+          <Route path="/login" element={<Login />} />
+
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/account" element={<AccountManagement />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/history" element={<History />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   </StrictMode>,
