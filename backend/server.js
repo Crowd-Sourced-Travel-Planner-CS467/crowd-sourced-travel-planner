@@ -47,6 +47,21 @@ app.get("/api/db-test", async (req, res) => {
       message: "Could not connect to the database",
     });}});
 
+// Serve React frontend in production (Render hosting)
+if (process.env.NODE_ENV === "production") {
+  const path = require("path");
+
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  app.get("/{*splat}", (req, res, next) => {
+    if (req.path.startsWith("/api/") || req.path === "/api") {
+      return next();
+    }
+
+    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+  });
+}
+
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
