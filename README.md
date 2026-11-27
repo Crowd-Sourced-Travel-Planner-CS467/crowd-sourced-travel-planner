@@ -3,7 +3,7 @@
 
 ## Getting started
 
-1. **Check your Node.js version.**
+1. Check your Node.js version:
 
    ```bash
    node -v
@@ -11,26 +11,11 @@
 
    If the version starts with v24, you're set. Otherwise, download and install Node.js 24 from [nodejs.org](https://nodejs.org/en/download).
 
-2. **Clone the repository.**
+2. Clone the repository:
 
    ```bash
    git clone https://github.com/SYee50/crowd-sourced-travel-planner.git
    cd crowd-sourced-travel-planner
-   ```
-
-## Frontend setup
-
-1. Install the frontend dependencies:
-
-   ```bash
-   cd frontend
-   npm install
-   ```
-
-2. Start the development server:
-
-   ```bash
-   npm run dev
    ```
 
 ## Database Setup
@@ -71,7 +56,22 @@
    npm run dev
    ```
 
-## Test Commands
+## Frontend setup
+
+1. Install the frontend dependencies:
+
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+## Test Backend Connection
 
 - [http://localhost:3000/api/health](http://localhost:3000/api/health) - Checks that the backend server is running.
 - [http://localhost:3000/api/db-test](http://localhost:3000/api/db-test) - Checks that the backend can connect to Supabase.
