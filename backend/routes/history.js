@@ -21,13 +21,13 @@ function requireAuth(req, res, next) {
   }
 }
 
-console.log("[history] Router loaded");
+// console.log("[history] Router loaded");
 
 //GET /api/history
 // Returns the logged-in user's trips (with their experiences) and standalone experiences they have created.
 
 router.get("/", requireAuth, async (req, res) => {
-  console.log("[history] GET / called by user_id:", req.user.user_id);
+  // console.log("[history] GET / called by user_id:", req.user.user_id);
   const userId = req.user.user_id;
 
   try {

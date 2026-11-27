@@ -5,14 +5,24 @@ const crypto = require("crypto");
 const { Resend } = require("resend");
 const pool = require("../db");
 const router = express.Router();
-const resend = new Resend(process.env.RESEND_API_KEY);
+// const resend = new Resend(process.env.RESEND_API_KEY);
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SALT_ROUNDS = 12;
 const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret_in_production";
 const JWT_EXPIRES_IN = "7d";
-const RESEND_FROM = process.env.RESEND_FROM;
+// const RESEND_FROM = process.env.RESEND_FROM;
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const RESET_TOKEN_EXPIRY_MINUTES = 30;
+
+// Replace Resend setup with:
+const nodemailer = require("nodemailer");
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
 
 //Helpers
 function validateRegistration({ email, password, full_name }) {
@@ -186,10 +196,10 @@ router.post("/forgot-password", async (req, res) => {
     console.log("[forgot-password] Token stored. Expires at:", expiresAt);
     const resetLink = `${FRONTEND_URL}/reset-password?token=${rawToken}`;
     console.log("[forgot-password] Reset link:", resetLink);
-    console.log("[forgot-password] Sending email via Resend — from:", RESEND_FROM, "to:", normalizedEmail);
-    const emailResult = await resend.emails.send({
-      from: RESEND_FROM,
-      to: process.env.RESEND_TEST_TO || normalizedEmail,
+    // console.log("[forgot-password] Sending email via Resend — from:", RESEND_FROM, "to:", normalizedEmail);
+    const emailResult = await transporter.sendMail({
+      from: `"Crowd-Sourced Travel Planner" <${process.env.BREVO_USER}>`,
+      to: normalizedEmail,
       subject: "Reset your password — Crowd-Sourced Travel Planner",
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
