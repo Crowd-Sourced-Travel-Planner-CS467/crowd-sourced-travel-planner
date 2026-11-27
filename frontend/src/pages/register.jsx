@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "./Register.css";
+import "./register.css";
 
 const INITIAL_FORM = { full_name:"", email:"", password: "",confirm_password: "" };
 export default function Register() {

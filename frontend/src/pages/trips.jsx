@@ -2,9 +2,11 @@
 // Transcript: https://oregonstateuniversity-my.sharepoint.com/:w:/g/personal/harrisr6_oregonstate_edu/IQBeWruOGYKtRJCqR3wQY04OAQb-4zGosjXMuJZV76Xwpms?e=cQa044 
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './trips.css';
 
 function Trips() {
+  const navigate = useNavigate();
   // Stores the new trip name, search input, and list of saved trips.
   const [tripName, setTripName] = useState('');
   const [searchName, setSearchName] = useState('');
@@ -20,19 +22,26 @@ function Trips() {
 );
 
   // Retrieves saved trips from the backend and updates the displayed list.
-  async function fetchTrips() {
-    try {
-        const response = await fetch('/api/trips');
-              if (!response.ok) {
-                throw new Error('Failed to retrieve trips');
-              }
 
-      const data = await response.json();
-      setTrips(data);
-    } catch (error) {
-      console.error('Error fetching trips:', error);
+async function fetchTrips() {
+  try {
+    const response = await fetch('/api/trips', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to retrieve trips');
     }
+
+    const data = await response.json();
+    setTrips(data);
+  } catch (error) {
+    console.error('Error fetching trips:', error);
   }
+}
+
 
   // Loads saved trips when the component first appears on the page.
   useEffect(() => {
@@ -40,67 +49,67 @@ function Trips() {
   }, []);
 
   // Validates the trip name, sends it to the backend, and refreshes the list.
-  async function handleSubmit(event) {
-    event.preventDefault();
 
-    if (!tripName.trim()) {
-      alert('Please enter a valid trip name.');
-      return;
-    }
+async function handleSubmit(event) {
+  event.preventDefault();
 
-    try {
-        const response = await fetch('/api/trips', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          trip_name: tripName.trim(),
-          user_id: 1, // Sets user_id = 1 for testing purposes only. TODO: remove when user management is set up
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create trip.');
-      }
-
-      await fetchTrips();
-      setTripName('');
-    } catch (error) {
-      console.error('Error creating trip:', error);
-      alert('Could not create trip. Please try again.');
-    }
+  if (!tripName.trim()) {
+    alert('Please enter a valid trip name.');
+    return;
   }
+
+  try {
+    const response = await fetch('/api/trips', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify({
+        trip_name: tripName.trim(),
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to create trip.');
+    }
+
+    await fetchTrips();
+    setTripName('');
+  } catch (error) {
+    console.error('Error creating trip:', error);
+    alert('Could not create trip. Please try again.');
+  }
+}
+
 
     // Delete a trip
-  async function deleteTrip(tripId) {
-    try {
-          const response = await fetch(
-            `/api/trips/${tripId}`,
-            {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ user_id: 1 }),
-        }
-      );
 
-      if (!response.ok) {
-        throw new Error('Failed to delete trip');
-      }
+async function deleteTrip(tripId) {
+  try {
+    const response = await fetch(`/api/trips/${tripId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
 
-      // Remove the deleted trip from the displayed list
-      setTrips((previousTrips) =>
-        previousTrips.filter((trip) => trip.trip_id !== tripId)
-      );
-    } catch (error) {
-      console.error('Error deleting trip:', error);
-      alert('Unable to delete trip.');
+    if (!response.ok) {
+      throw new Error('Failed to delete trip');
     }
+
+    // Remove the deleted trip from the displayed list
+    setTrips((previousTrips) =>
+      previousTrips.filter((trip) => trip.trip_id !== tripId)
+    );
+  } catch (error) {
+    console.error('Error deleting trip:', error);
+    alert('Unable to delete trip.');
   }
+}
+
 
       // Start editing a trip name
     function handleEdit(trip) {
@@ -109,49 +118,48 @@ function Trips() {
     }
 
     // Save the updated trip name
-    async function saveTripName(tripId) {
-      if (!editedTripName.trim()) {
-        alert('Please enter a valid trip name.');
-        return;
-      }
 
-      try {
-          const response = await fetch(
-            `/api/trips/${tripId}`,
-            {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              trip_name: editedTripName.trim(),
-              user_id: 1,
-            }),
-          }
-        );
+async function saveTripName(tripId) {
+  if (!editedTripName.trim()) {
+    alert('Please enter a valid trip name.');
+    return;
+  }
 
-        const data = await response.json();
+  try {
+    const response = await fetch(`/api/trips/${tripId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify({
+        trip_name: editedTripName.trim(),
+      }),
+    });
 
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to update trip.');
-        }
+    const data = await response.json();
 
-        // Update the displayed trip name
-        setTrips((previousTrips) =>
-          previousTrips.map((trip) =>
-            trip.trip_id === tripId
-              ? { ...trip, trip_name: data.trip_name }
-              : trip
-          )
-        );
-
-        setEditingTripId(null);
-        setEditedTripName('');
-      } catch (error) {
-        console.error('Error updating trip:', error);
-        alert('Unable to update trip.');
-      }
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to update trip.');
     }
+
+    // Update the displayed trip name
+    setTrips((previousTrips) =>
+      previousTrips.map((trip) =>
+        trip.trip_id === tripId
+          ? { ...trip, trip_name: data.trip_name }
+          : trip
+      )
+    );
+
+    setEditingTripId(null);
+    setEditedTripName('');
+  } catch (error) {
+    console.error('Error updating trip:', error);
+    alert('Unable to update trip.');
+  }
+}
+
 
     // Cancel editing
     function cancelEdit() {
@@ -161,6 +169,13 @@ function Trips() {
 
   return (
     <div className="trips-container">
+          <button
+      type="button"
+      className="back-button"
+      onClick={() => navigate('/')}
+    >
+      Back to Home
+    </button>
       {/* Page heading and description */}
       <h2>My Trip Management</h2>
       <p>Create a new trip or browse your saved trips</p>
@@ -272,7 +287,6 @@ function Trips() {
 
   
 }
-
 
 
 export default Trips;

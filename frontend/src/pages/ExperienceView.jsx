@@ -296,6 +296,25 @@ function ExperienceView() {
                 </header>
 
                 <section className="experience-view-section">
+                    <h2>Image</h2>
+
+                    {imageError || !experience.image_url ? (
+                        <p className="experience-view-image-error">
+                            {imageError
+                                ? "The experience image could not be loaded."
+                                : "No image provided."}
+                        </p>
+                    ) : (
+                        <img
+                            src={experience.image_url}
+                            alt={experience.title}
+                            className="experience-view-image"
+                            onError={() => setImageError(true)}
+                        />
+                    )}
+                </section>
+
+                <section className="experience-view-section">
                     <h2>Description</h2>
 
                     <p className="experience-view-description">
@@ -321,25 +340,6 @@ function ExperienceView() {
                         Longitude:{" "}
                         {experience.longitude ?? "Unavailable"}
                     </p>
-                </section>
-
-                <section className="experience-view-section">
-                    <h2>Image</h2>
-
-                    {imageError || !experience.image_url ? (
-                        <p className="experience-view-image-error">
-                            {imageError
-                                ? "The experience image could not be loaded."
-                                : "No image provided."}
-                        </p>
-                    ) : (
-                        <img
-                            src={experience.image_url}
-                            alt={experience.title}
-                            className="experience-view-image"
-                            onError={() => setImageError(true)}
-                        />
-                    )}
                 </section>
 
                 {/* Individual rating for the currently logged-in user. */}

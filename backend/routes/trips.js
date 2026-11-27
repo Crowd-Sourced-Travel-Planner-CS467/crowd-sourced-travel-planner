@@ -4,12 +4,13 @@
 
 const express = require("express");
 const pool = require("../db");
-
 const router = express.Router();
+const authenticateToken = require("../middleware/authMiddleware");
 
 // Create new trips
-router.post("/", async (req, res) => {
-  const { user_id, trip_name } = req.body;
+router.post("/", authenticateToken, async (req, res) => {
+  const { trip_name } = req.body;
+  const user_id = req.user.user_id;
 
   if (!user_id || !trip_name || !trip_name.trim()) {
     return res.status(400).json({
@@ -39,12 +40,14 @@ router.post("/", async (req, res) => {
 });
 
 // Get already created trips
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT trip_id, user_id, trip_name, created_time
-       FROM public.trips
-       ORDER BY created_time DESC`
+      FROM public.trips
+      WHERE user_id = $1
+      ORDER BY created_time DESC`,
+      [req.user.user_id]
     );
 
     res.json(result.rows);
@@ -58,9 +61,9 @@ router.get("/", async (req, res) => {
 });
 
 // Delete a trip
-router.delete("/:trip_id", async (req, res) => {
+router.delete("/:trip_id", authenticateToken, async (req, res) => {
   const { trip_id } = req.params;
-  const { user_id } = req.body;
+  const user_id = req.user.user_id;
 
   try {
     const result = await pool.query(
@@ -84,9 +87,10 @@ router.delete("/:trip_id", async (req, res) => {
 });
 
 // Update an existing trip name
-router.put("/:trip_id", async (req, res) => {
+router.put("/:trip_id", authenticateToken, async (req, res) => {
   const { trip_id } = req.params;
-  const { user_id, trip_name } = req.body;
+  const { trip_name } = req.body;
+  const user_id = req.user.user_id;
 
   // Validate the trip name
   if (!trip_name || !trip_name.trim()) {
@@ -114,6 +118,76 @@ router.put("/:trip_id", async (req, res) => {
   } catch (err) {
     console.error("Error updating trip:", err);
     res.status(500).json({ error: "Failed to update trip." });
+  }
+});
+
+
+// Add an existing experience to a trip
+router.post("/:trip_id/experiences", authenticateToken, async (req, res) => {
+  const { trip_id } = req.params;
+  const { experience_id } = req.body;
+  const user_id = req.user.user_id;
+
+  if (!experience_id) {
+    return res.status(400).json({
+      error: "An experience_id is required."
+    });
+  }
+
+  try {
+    // Verify that the trip belongs to the logged-in user
+    const trip = await pool.query(
+      `SELECT trip_id
+       FROM public.trips
+       WHERE trip_id = $1 AND user_id = $2`,
+      [trip_id, user_id]
+    );
+
+    if (trip.rowCount === 0) {
+      return res.status(404).json({
+        error: "Trip not found or you do not have permission to access it."
+      });
+    }
+
+    // Verify that the experience exists
+    const experience = await pool.query(
+      `SELECT experience_id
+       FROM public.experiences
+       WHERE experience_id = $1`,
+      [experience_id]
+    );
+
+    if (experience.rowCount === 0) {
+      return res.status(404).json({
+        error: "Experience not found."
+      });
+    }
+
+    // Add the experience to the trip
+    const result = await pool.query(
+      `INSERT INTO public.trip_experiences (trip_id, experience_id)
+       VALUES ($1, $2)
+       ON CONFLICT (trip_id, experience_id) DO NOTHING
+       RETURNING *`,
+      [trip_id, experience_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(409).json({
+        error: "This experience is already in the trip."
+      });
+    }
+
+    res.status(201).json({
+      message: "Experience added to trip successfully.",
+      trip_experience: result.rows[0]
+    });
+
+  } catch (err) {
+    console.error("Error adding experience to trip:", err);
+    res.status(500).json({
+      error: "Failed to add experience to trip."
+    });
   }
 });
 
