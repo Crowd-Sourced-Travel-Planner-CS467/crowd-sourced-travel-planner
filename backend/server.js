@@ -2,6 +2,7 @@ const express = require("express");
 require("dotenv").config();
 const pool = require("./db");
 const experienceRoutes = require("./routes/experiences");
+const discoveryRoutes = require("./routes/discovery");
 const authRoutes = require("./routes/authroutes.js");
 const { router: userRoutes } = require("./routes/userroutes.js");
 const historyRouter = require("./routes/history.js");
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use("/api/trips", tripsRouter);
+app.use("/api/experiences", discoveryRoutes);
 app.use("/api/experiences", experienceRoutes);
 
 //Auth routes
