@@ -1,18 +1,28 @@
 /* Code below created with AI assistance from chatGPT. */
 /* Transcript: https://oregonstateuniversity-my.sharepoint.com/:w:/g/personal/harrisr6_oregonstate_edu/IQBeWruOGYKtRJCqR3wQY04OAQb-4zGosjXMuJZV76Xwpms?e=cQa044  */
 
-/* Main container for the trip management page */
+
+/* ==============================
+   Main Container
+============================== */
+
 .trips-container {
   max-width: 1100px;
   margin: 40px auto;
   padding: 30px;
 }
 
-/* Main page heading */
+/* Page headings */
 .trips-container h2 {
   font-size: 32px;
   font-weight: bold;
   margin-bottom: 8px;
+}
+
+.trips-container h3 {
+  font-size: 24px;
+  margin-top: 35px;
+  margin-bottom: 15px;
 }
 
 /* Page description */
@@ -21,8 +31,10 @@
   margin-bottom: 25px;
 }
 
-/* Styles the create and search forms */
-/* Styles the create and search forms */
+/* ==============================
+   Forms and Inputs
+============================== */
+
 .trips-container form {
   display: flex;
   flex-direction: row;
@@ -35,12 +47,11 @@
   border-radius: 8px;
   width: fit-content;
 }
-/* Form labels */
+
 .trips-container label {
   font-weight: 600;
 }
 
-/* Input fields */
 .trips-container input {
   padding: 11px 12px;
   font-size: 15px;
@@ -49,28 +60,70 @@
   min-width: 220px;
 }
 
-/* Buttons */
+/* ==============================
+   Buttons
+============================== */
+
 .trips-container button {
   padding: 10px 16px;
   font-size: 14px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: opacity 0.2s ease;
 }
 
-/* Button hover effect */
 .trips-container button:hover {
   opacity: 0.85;
 }
 
-/* Saved trips heading */
-.trips-container h3 {
-  font-size: 24px;
-  margin-top: 35px;
-  margin-bottom: 15px;
+/* Create and Edit */
+.trips-container button[type="submit"],
+.edit-button {
+  background-color: #2563eb;
+  color: white;
 }
 
-/* Saved trips table */
+/* Save */
+.save-button {
+  background-color: #16a34a;
+  color: white;
+}
+
+/* Delete */
+.delete-button {
+  background-color: #bb2323;
+  color: white;
+}
+
+/* Cancel and Clear */
+.cancel-button,
+.clear-button {
+  background-color: #6b7280;
+  color: white;
+}
+
+/* Action buttons in the trips table */
+.trips-container td:last-child {
+  white-space: nowrap;
+}
+
+.trips-container td:last-child button {
+  height: 36px;
+  min-height: 36px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin-right: 8px;
+  padding: 0 16px;
+}
+
+/* ==============================
+   Saved Trips Table
+============================== */
+
 .trips-container table {
   width: 100%;
   table-layout: fixed;
@@ -79,27 +132,26 @@
   text-align: left;
 }
 
-/* Table column widths */
+/* Column widths */
 .trips-container th:first-child,
 .trips-container td:first-child {
-  width: 40%;
+  width: 30%; /* Trip Name */
 }
 
 .trips-container th:nth-child(2),
 .trips-container td:nth-child(2) {
-  width: 20%;
+  width: 20%; /* Creation Date */
 }
 
 .trips-container th:nth-child(3),
 .trips-container td:nth-child(3) {
-  width: 20%;
+  width: 30%; /* Linked Experiences */
 }
 
 .trips-container th:nth-child(4),
 .trips-container td:nth-child(4) {
-  width: 20%;
+  width: 20%; /* Actions */
 }
-
 /* Table headers and cells */
 .trips-container th,
 .trips-container td {
@@ -108,32 +160,120 @@
   vertical-align: middle;
 }
 
-/* Table headings */
 .trips-container th {
   font-weight: 600;
   border-bottom: 2px solid #ccc;
 }
 
-/* Horizontal lines between trips */
 .trips-container td {
   border-bottom: 1px solid #ddd;
 }
 
-/* Remove bottom border from last row */
 .trips-container tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* Keep action buttons side by side */
-.trips-container td:last-child {
+/* ==============================
+   Linked Experiences Column
+============================== */
+
+.trips-container td:nth-child(3) {
+  line-height: 1.5;
+}
+
+/* Experience list */
+.trips-container td:nth-child(3) ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.trips-container td:nth-child(3) li {
+  margin-bottom: 6px;
+}
+
+/* Experience links */
+.trips-container td:nth-child(3) a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.trips-container td:nth-child(3) a:hover {
+  text-decoration: underline;
+}
+
+/* Empty-state message */
+.trips-container td:nth-child(3) span {
+  display: block;
+  color: #777;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+/* Search for an experience link */
+.trips-container td:nth-child(3) .add-experience-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
-.trips-container td:last-child button {
-  margin-right: 8px;
+
+/* ==============================
+   Delete Confirmation Modal
+============================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-/* Responsive layout for smaller screens */
+.delete-modal {
+  background: white;
+  width: 90%;
+  max-width: 420px;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.delete-modal h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 22px;
+}
+
+.delete-modal p {
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 25px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.modal-actions button {
+  min-width: 110px;
+}
+
+/* ==============================
+   Responsive Layout
+============================== */
+
 @media (max-width: 700px) {
   .trips-container {
     padding: 15px;
@@ -162,53 +302,4 @@
   .trips-container td:last-child button {
     margin-bottom: 5px;
   }
-}
-
-/* Create and Edit buttons */
-.trips-container button[type="submit"],
-.edit-button {
-  background-color: #2563eb;
-  color: white;
-  border: none;
-}
-
-/* Save button */
-.save-button {
-  background-color: #16a34a;
-  color: white;
-  border: none;
-}
-
-/* Delete button */
-.delete-button {
-  background-color: #bb2323;
-  color: white;
-  border: none;
-}
-
-/* Cancel and Clear buttons */
-.cancel-button,
-.clear-button {
-  background-color: #6b7280;
-  color: white;
-  border: none;
-}
-
-/* Hover effect */
-.trips-container button:hover {
-  opacity: 0.85;
-}
-
-.back-button {
-  background-color: #6c757d;
-  color: white;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-bottom: 15px;
-}
-
-.back-button:hover {
-  background-color: #5a6268;
 }

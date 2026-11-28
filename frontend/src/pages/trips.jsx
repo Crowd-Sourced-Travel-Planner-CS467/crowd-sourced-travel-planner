@@ -2,7 +2,7 @@
 // Transcript: https://oregonstateuniversity-my.sharepoint.com/:w:/g/personal/harrisr6_oregonstate_edu/IQBeWruOGYKtRJCqR3wQY04OAQb-4zGosjXMuJZV76Xwpms?e=cQa044 
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './trips.css';
 
 function Trips() {
@@ -11,6 +11,7 @@ function Trips() {
   const [tripName, setTripName] = useState('');
   const [searchName, setSearchName] = useState('');
   const [trips, setTrips] = useState([]);
+  const [tripToDelete, setTripToDelete] = useState(null);
 
   // Edit trips
   const [editingTripId, setEditingTripId] = useState(null);
@@ -85,8 +86,7 @@ async function handleSubmit(event) {
 }
 
 
-    // Delete a trip
-
+// Delete a trip
 async function deleteTrip(tripId) {
   try {
     const response = await fetch(`/api/trips/${tripId}`, {
@@ -106,7 +106,6 @@ async function deleteTrip(tripId) {
     );
   } catch (error) {
     console.error('Error deleting trip:', error);
-    alert('Unable to delete trip.');
   }
 }
 
@@ -169,13 +168,6 @@ async function saveTripName(tripId) {
 
   return (
     <div className="trips-container">
-          <button
-      type="button"
-      className="back-button"
-      onClick={() => navigate('/')}
-    >
-      Back to Home
-    </button>
       {/* Page heading and description */}
       <h2>My Trip Management</h2>
       <p>Create a new trip or browse your saved trips</p>
@@ -253,7 +245,25 @@ async function saveTripName(tripId) {
                       year: "numeric",
                     })}
                   </td>
-                  <td></td>
+<td>
+  {trip.experiences && trip.experiences.length > 0 ? (
+    <ul>
+      {trip.experiences.map((experience) => (
+        <li key={experience.experience_id}>
+          <Link to={`/experiences/${experience.experience_id}`}>
+            {experience.title}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <span>No experiences added yet.</span>
+  )}
+
+  <Link className="add-experience-link" to="/experiences">
+    Search for an experience to add →
+  </Link>
+</td>
                   <td>
                     {editingTripId === trip.trip_id ? (
                       <>
@@ -269,7 +279,10 @@ async function saveTripName(tripId) {
                         <button className="edit-button" onClick={() => handleEdit(trip)}>
                           Edit
                         </button>
-                        <button className="delete-button" onClick={() => deleteTrip(trip.trip_id)}>
+                        <button
+                          className="delete-button"
+                          onClick={() => setTripToDelete(trip)}
+                        >
                           Delete
                         </button>
                       </>
@@ -280,6 +293,38 @@ async function saveTripName(tripId) {
             </tbody>
           </table>
         )}
+        {tripToDelete && (
+  <div className="modal-overlay">
+    <div className="delete-modal">
+      <h3>Delete Trip?</h3>
+
+      <p>
+        Are you sure you want to delete
+        <strong> {tripToDelete.trip_name}</strong>?
+        This action cannot be undone.
+      </p>
+
+      <div className="modal-actions">
+        <button
+          className="cancel-button"
+          onClick={() => setTripToDelete(null)}
+        >
+          Cancel
+        </button>
+
+        <button
+          className="delete-button"
+          onClick={async () => {
+            await deleteTrip(tripToDelete.trip_id);
+            setTripToDelete(null);
+          }}
+        >
+          Delete Trip
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 
