@@ -15,14 +15,31 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const RESET_TOKEN_EXPIRY_MINUTES = 30;
 
 // Replace Resend setup with:
-const nodemailer = require("nodemailer");
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+async function sendEmail({ to, subject, html }) {
+  const response = await fetch("https://sendliberty.com/api/send", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.SENDLIBERTY_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: `"Crowd-Sourced Travel Planner" <${process.env.GMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.message || result.error || `Email API failed: ${response.status}`
+    );
+  }
+
+  return result;
+}
 
 //Helpers
 function validateRegistration({ email, password, full_name }) {
@@ -197,8 +214,7 @@ router.post("/forgot-password", async (req, res) => {
     const resetLink = `${FRONTEND_URL}/reset-password?token=${rawToken}`;
     console.log("[forgot-password] Reset link:", resetLink);
     // console.log("[forgot-password] Sending email via Resend — from:", RESEND_FROM, "to:", normalizedEmail);
-    const emailResult = await transporter.sendMail({
-      from: `"Crowd-Sourced Travel Planner" <${process.env.BREVO_USER}>`,
+    const emailResult = await sendEmail({
       to: normalizedEmail,
       subject: "Reset your password — Crowd-Sourced Travel Planner",
       html: `
