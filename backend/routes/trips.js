@@ -39,14 +39,33 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
-// Get already created trips
+// Get already created trips, including their linked experiences
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT trip_id, user_id, trip_name, created_time
-      FROM public.trips
-      WHERE user_id = $1
-      ORDER BY created_time DESC`,
+      `SELECT
+          t.trip_id,
+          t.user_id,
+          t.trip_name,
+          t.created_time,
+          COALESCE(
+            json_agg(
+              json_build_object(
+                'experience_id', e.experience_id,
+                'title', e.title
+              )
+              ORDER BY e.title
+            ) FILTER (WHERE e.experience_id IS NOT NULL),
+            '[]'::json
+          ) AS experiences
+       FROM public.trips t
+       LEFT JOIN public.trip_experiences te
+          ON t.trip_id = te.trip_id
+       LEFT JOIN public.experiences e
+          ON te.experience_id = e.experience_id
+       WHERE t.user_id = $1
+       GROUP BY t.trip_id
+       ORDER BY t.created_time DESC`,
       [req.user.user_id]
     );
 
