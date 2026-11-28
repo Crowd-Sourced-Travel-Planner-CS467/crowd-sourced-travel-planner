@@ -1,12 +1,11 @@
 .discovery {
-  max-width: 1100px;
+  max-width: 1160px;
   margin: 0 auto;
   padding: 2rem 1rem;
   text-align: left;
 }
-
 .discovery header { margin-bottom: 1.5rem; }
-.discovery h1 { margin-bottom: 0.5rem; }
+.discovery h1 { margin-bottom: .5rem; }
 .discovery-filters {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -14,34 +13,56 @@
   gap: 1rem;
   padding: 1.25rem;
   border: 1px solid #ccd5df;
-  border-radius: 0.75rem;
+  border-radius: .75rem;
 }
-
-.discovery-filters label { display: grid; gap: 0.4rem; font-weight: 600; }
+.discovery-filters label { display: grid; gap: .4rem; font-weight: 600; }
 .discovery-filters input,
 .discovery-filters select,
-.discovery-filters button {
-  padding: 0.65rem;
+.discovery-filters button,
+.discovery-trip-tools select,
+.discovery-actions button,
+.discovery-pagination button,
+.discovery-results button {
+  padding: .65rem;
   border: 1px solid #9aa9b8;
-  border-radius: 0.4rem;
+  border-radius: .4rem;
   font: inherit;
 }
-
-.discovery-filters button { cursor: pointer; }
+.discovery button { cursor: pointer; }
+.discovery button:disabled { opacity: .55; cursor: not-allowed; }
+.discovery-trip-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+.discovery-notice { margin-top: 1rem; }
 .discovery-results { margin-top: 2rem; }
 .discovery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1rem;
   list-style: none;
   padding: 0;
 }
-
 .discovery-card {
   padding: 1rem;
   border: 1px solid #ccd5df;
-  border-radius: 0.75rem;
+  border-radius: .75rem;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
-
-.discovery-card h3 { margin-top: 0; }
+.discovery-card h3 { margin-top: .75rem; }
+.discovery-image {
+  display: block;
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: .4rem;
+}
 .discovery-location { font-weight: 600; }
+.discovery-rating { font-weight: 600; }
+.discovery-tags { font-size: .9rem; }
+.discovery-actions { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
+.discovery-pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 1.5rem auto; }
